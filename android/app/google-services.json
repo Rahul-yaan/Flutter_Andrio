@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "576794980755",
+    "project_id": "yaan-12663",
+    "storage_bucket": "yaan-12663.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:576794980755:android:0d72ffc2696793b35fb866",
+        "android_client_info": {
+          "package_name": "com.example.yaan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLfliBvRFlXECmlOvkwEqYWwNnMCxIPpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:576794980755:android:104c28c26af548c25fb866",
+        "android_client_info": {
+          "package_name": "com.yaan.truckparkingbooking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLfliBvRFlXECmlOvkwEqYWwNnMCxIPpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:576794980755:android:1de867d44490a54a5fb866",
+        "android_client_info": {
+          "package_name": "com.yaanvendor.truckparkingbooking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLfliBvRFlXECmlOvkwEqYWwNnMCxIPpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
