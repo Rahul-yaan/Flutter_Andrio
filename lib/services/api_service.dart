@@ -33,7 +33,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://your-laravel-app.com/api';
+  static const String baseUrl = 'http://192.168.1.40:8000/api';
 
   static Map<String, String> get _headers => {
     'Content-Type': 'application/json',
@@ -84,11 +84,7 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/login'),
       headers: _headers,
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-        'role': 'user',
-      }),
+      body: jsonEncode({'email': email, 'password': password, 'role': 'user'}),
     );
     return jsonDecode(res.body);
   }
@@ -106,5 +102,16 @@ class ApiService {
   static Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('api_token');
+  }
+
+  static Future<Map<String, dynamic>> forgotPassword({
+    required String email,
+  }) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/forgot-password'),
+      headers: _headers,
+      body: jsonEncode({'email': email}),
+    );
+    return jsonDecode(res.body);
   }
 }

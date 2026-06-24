@@ -14,34 +14,46 @@ class OtpPage extends StatefulWidget {
 }
 
 class _OtpPageState extends State<OtpPage> {
-  final List<TextEditingController> _otpCtrls =
-      List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _otpCtrls = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
-  final _passCtrl    = TextEditingController();
+  final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   final _authService = AuthService();
-  bool _loading      = false;
-  bool _passVisible  = false;
+  bool _loading = false;
+  bool _passVisible = false;
 
   String get _otp => _otpCtrls.map((c) => c.text).join();
 
   Future<void> _verify() async {
-    if (_otp.length != 6) { _snack('Enter complete 6-digit OTP'); return; }
-    if (_passCtrl.text.length < 6) { _snack('Password min 6 characters'); return; }
-    if (_passCtrl.text != _confirmCtrl.text) { _snack('Passwords do not match'); return; }
+    if (_otp.length != 6) {
+      _snack('Enter complete 6-digit OTP');
+      return;
+    }
+    if (_passCtrl.text.length < 6) {
+      _snack('Password min 6 characters');
+      return;
+    }
+    if (_passCtrl.text != _confirmCtrl.text) {
+      _snack('Passwords do not match');
+      return;
+    }
 
     setState(() => _loading = true);
 
     final idToken = await _authService.verifyOtp(_otp);
     if (idToken == null) {
       setState(() => _loading = false);
-      _snack('Wrong OTP. Try again.'); return;
+      _snack('Wrong OTP. Try again.');
+      return;
     }
 
     final result = await ApiService.verifyOtp(
-      userId              : widget.userId,
-      firebaseIdToken     : idToken,
-      password            : _passCtrl.text,
+      userId: widget.userId,
+      firebaseIdToken: idToken,
+      password: _passCtrl.text,
       passwordConfirmation: _confirmCtrl.text,
     );
 
@@ -50,17 +62,19 @@ class _OtpPageState extends State<OtpPage> {
     if (result['message'] != null) {
       _snack('Verified! Please login.');
       if (mounted) {
-        Navigator.pushAndRemoveUntil(context,
-            MaterialPageRoute(builder: (_) => const LoginPage()),
-            (r) => false);
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+          (r) => false,
+        );
       }
     } else {
       _snack(result['error'] ?? 'Verification failed');
     }
   }
 
-  void _snack(String msg) => ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text(msg)));
+  void _snack(String msg) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
   @override
   Widget build(BuildContext context) {
@@ -82,15 +96,22 @@ class _OtpPageState extends State<OtpPage> {
               children: [
                 const Icon(Icons.phone_android, color: Colors.white, size: 44),
                 const SizedBox(height: 12),
-                const Text('Verify Phone',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600)),
+                const Text(
+                  'Verify Phone',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 6),
-                Text('OTP sent to ${widget.phoneNumber}',
-                    style: TextStyle(
-                        color: Colors.white.withOpacity(0.75), fontSize: 13)),
+                Text(
+                  'OTP sent to ${widget.phoneNumber}',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 13,
+                  ),
+                ),
               ],
             ),
           ),
@@ -101,11 +122,14 @@ class _OtpPageState extends State<OtpPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 8),
-                  const Text('Enter OTP',
-                      style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF444444))),
+                  const Text(
+                    'Enter OTP',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF444444),
+                    ),
+                  ),
                   const SizedBox(height: 12),
 
                   // 6 OTP boxes
@@ -122,8 +146,10 @@ class _OtpPageState extends State<OtpPage> {
                           maxLength: 1,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w600,
-                              color: Color(0xFFC0392B)),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFC0392B),
+                          ),
                           decoration: InputDecoration(
                             counterText: '',
                             filled: true,
@@ -131,12 +157,16 @@ class _OtpPageState extends State<OtpPage> {
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: const BorderSide(
-                                  color: Color(0xFFDDDDDD), width: 1),
+                                color: Color(0xFFDDDDDD),
+                                width: 1,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: const BorderSide(
-                                  color: Color(0xFFC0392B), width: 2),
+                                color: Color(0xFFC0392B),
+                                width: 2,
+                              ),
                             ),
                           ),
                           onChanged: (val) {
@@ -152,25 +182,31 @@ class _OtpPageState extends State<OtpPage> {
                   ),
 
                   const SizedBox(height: 24),
-                  const Text('Set Password',
-                      style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF444444))),
+                  const Text(
+                    'Set Password',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF444444),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _passCtrl,
                     obscureText: !_passVisible,
                     decoration: InputDecoration(
                       labelText: 'New Password',
-                      prefixIcon: const Icon(Icons.lock_outline,
-                          color: Color(0xFFC0392B)),
+                      prefixIcon: const Icon(
+                        Icons.lock_outline,
+                        color: Color(0xFFC0392B),
+                      ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                            _passVisible
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            color: const Color(0xFF888888)),
+                          _passVisible
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: const Color(0xFF888888),
+                        ),
                         onPressed: () =>
                             setState(() => _passVisible = !_passVisible),
                       ),
@@ -182,8 +218,10 @@ class _OtpPageState extends State<OtpPage> {
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'Confirm Password',
-                      prefixIcon: Icon(Icons.lock_outline,
-                          color: Color(0xFFC0392B)),
+                      prefixIcon: Icon(
+                        Icons.lock_outline,
+                        color: Color(0xFFC0392B),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -204,8 +242,9 @@ class _OtpPageState extends State<OtpPage> {
                             TextSpan(
                               text: 'Resend',
                               style: TextStyle(
-                                  color: Color(0xFFC0392B),
-                                  fontWeight: FontWeight.w600),
+                                color: Color(0xFFC0392B),
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),

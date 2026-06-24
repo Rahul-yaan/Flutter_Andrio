@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../widgets/custom_button.dart';
 import 'home_page.dart';
 import 'register_page.dart';
+import 'forgot_password_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,19 +13,20 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _emailCtrl = TextEditingController();
-  final _passCtrl  = TextEditingController();
-  bool _loading    = false;
+  final _passCtrl = TextEditingController();
+  bool _loading = false;
   bool _passVisible = false;
 
   Future<void> _login() async {
     if (_emailCtrl.text.trim().isEmpty || _passCtrl.text.isEmpty) {
-      _snack('Enter email and password'); return;
+      _snack('Enter email and password');
+      return;
     }
 
     setState(() => _loading = true);
 
     final result = await ApiService.login(
-      email   : _emailCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
       password: _passCtrl.text,
     );
 
@@ -33,17 +35,19 @@ class _LoginPageState extends State<LoginPage> {
     if (result['token'] != null) {
       await ApiService.saveToken(result['token']);
       if (mounted) {
-        Navigator.pushAndRemoveUntil(context,
-            MaterialPageRoute(builder: (_) => const HomePage()),
-            (r) => false);
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+          (r) => false,
+        );
       }
     } else {
       _snack(result['error'] ?? 'Login failed');
     }
   }
 
-  void _snack(String msg) => ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text(msg)));
+  void _snack(String msg) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
   @override
   Widget build(BuildContext context) {
@@ -64,15 +68,22 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Welcome Back',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w600)),
+                const Text(
+                  'Welcome Back',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Login to continue to StayEase',
-                    style: TextStyle(
-                        color: Colors.white.withOpacity(0.75), fontSize: 14)),
+                Text(
+                  'Login to continue to StayEase',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 14,
+                  ),
+                ),
               ],
             ),
           ),
@@ -87,8 +98,10 @@ class _LoginPageState extends State<LoginPage> {
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: 'Email Address',
-                      prefixIcon: Icon(Icons.email_outlined,
-                          color: Color(0xFFC0392B)),
+                      prefixIcon: Icon(
+                        Icons.email_outlined,
+                        color: Color(0xFFC0392B),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -97,14 +110,17 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: !_passVisible,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline,
-                          color: Color(0xFFC0392B)),
+                      prefixIcon: const Icon(
+                        Icons.lock_outline,
+                        color: Color(0xFFC0392B),
+                      ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                            _passVisible
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            color: const Color(0xFF888888)),
+                          _passVisible
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: const Color(0xFF888888),
+                        ),
                         onPressed: () =>
                             setState(() => _passVisible = !_passVisible),
                       ),
@@ -114,9 +130,17 @@ class _LoginPageState extends State<LoginPage> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
-                      child: const Text('Forgot password?',
-                          style: TextStyle(color: Color(0xFFC0392B))),
+                      // UPDATED — navigates to ForgotPasswordPage
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ForgotPasswordPage(),
+                        ),
+                      ),
+                      child: const Text(
+                        'Forgot password?',
+                        style: TextStyle(color: Color(0xFFC0392B)),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -131,8 +155,10 @@ class _LoginPageState extends State<LoginPage> {
                       Expanded(child: Divider(color: Color(0xFFEEEEEE))),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text('or',
-                            style: TextStyle(color: Color(0xFF888888))),
+                        child: Text(
+                          'or',
+                          style: TextStyle(color: Color(0xFF888888)),
+                        ),
                       ),
                       Expanded(child: Divider(color: Color(0xFFEEEEEE))),
                     ],
@@ -141,16 +167,24 @@ class _LoginPageState extends State<LoginPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account?",
-                          style: TextStyle(color: Color(0xFF888888))),
+                      const Text(
+                        "Don't have an account?",
+                        style: TextStyle(color: Color(0xFF888888)),
+                      ),
                       TextButton(
-                        onPressed: () => Navigator.pushReplacement(context,
-                            MaterialPageRoute(
-                                builder: (_) => const RegisterPage())),
-                        child: const Text('Register',
-                            style: TextStyle(
-                                color: Color(0xFFC0392B),
-                                fontWeight: FontWeight.w600)),
+                        onPressed: () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterPage(),
+                          ),
+                        ),
+                        child: const Text(
+                          'Register',
+                          style: TextStyle(
+                            color: Color(0xFFC0392B),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ),

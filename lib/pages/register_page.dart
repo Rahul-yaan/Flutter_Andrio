@@ -12,32 +12,38 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final _nameCtrl  = TextEditingController();
+  final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _authService = AuthService();
   bool _loading = false;
 
   Future<void> _submit() async {
-    final name  = _nameCtrl.text.trim();
+    final name = _nameCtrl.text.trim();
     final email = _emailCtrl.text.trim();
     final phone = _phoneCtrl.text.trim();
 
     if (name.isEmpty || email.isEmpty || phone.isEmpty) {
-      _snack('All fields are required'); return;
+      _snack('All fields are required');
+      return;
     }
     if (phone.length != 10) {
-      _snack('Enter valid 10-digit phone number'); return;
+      _snack('Enter valid 10-digit phone number');
+      return;
     }
 
     setState(() => _loading = true);
 
     final result = await ApiService.register(
-        name: name, email: email, phone: '+91$phone');
+      name: name,
+      email: email,
+      phone: '+91$phone',
+    );
 
     if (result['error'] != null) {
       setState(() => _loading = false);
-      _snack(result['error']); return;
+      _snack(result['error']);
+      return;
     }
 
     final userId = result['user_id'] as int;
@@ -46,9 +52,12 @@ class _RegisterPageState extends State<RegisterPage> {
       phoneNumber: '+91$phone',
       onCodeSent: () {
         setState(() => _loading = false);
-        Navigator.push(context, MaterialPageRoute(
-          builder: (_) => OtpPage(userId: userId, phoneNumber: '+91$phone'),
-        ));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OtpPage(userId: userId, phoneNumber: '+91$phone'),
+          ),
+        );
       },
       onError: (err) {
         setState(() => _loading = false);
@@ -57,8 +66,8 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  void _snack(String msg) => ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text(msg)));
+  void _snack(String msg) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
   @override
   Widget build(BuildContext context) {
@@ -80,15 +89,22 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Create Account',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w600)),
+                const Text(
+                  'Create Account',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Fill in your details to get started',
-                    style: TextStyle(
-                        color: Colors.white.withOpacity(0.75), fontSize: 14)),
+                Text(
+                  'Fill in your details to get started',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 14,
+                  ),
+                ),
               ],
             ),
           ),
@@ -104,8 +120,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     controller: _nameCtrl,
                     decoration: const InputDecoration(
                       labelText: 'Full Name',
-                      prefixIcon: Icon(Icons.person_outline,
-                          color: Color(0xFFC0392B)),
+                      prefixIcon: Icon(
+                        Icons.person_outline,
+                        color: Color(0xFFC0392B),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -114,8 +132,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: 'Email Address',
-                      prefixIcon: Icon(Icons.email_outlined,
-                          color: Color(0xFFC0392B)),
+                      prefixIcon: Icon(
+                        Icons.email_outlined,
+                        color: Color(0xFFC0392B),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -125,8 +145,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     maxLength: 10,
                     decoration: const InputDecoration(
                       labelText: 'Mobile Number',
-                      prefixIcon: Icon(Icons.phone_outlined,
-                          color: Color(0xFFC0392B)),
+                      prefixIcon: Icon(
+                        Icons.phone_outlined,
+                        color: Color(0xFFC0392B),
+                      ),
                       prefixText: '+91  ',
                       counterText: '',
                     ),
@@ -141,15 +163,22 @@ class _RegisterPageState extends State<RegisterPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Already have an account?',
-                          style: TextStyle(color: Color(0xFF888888))),
+                      const Text(
+                        'Already have an account?',
+                        style: TextStyle(color: Color(0xFF888888)),
+                      ),
                       TextButton(
-                        onPressed: () => Navigator.pushReplacement(context,
-                            MaterialPageRoute(builder: (_) => const LoginPage())),
-                        child: const Text('Login',
-                            style: TextStyle(
-                                color: Color(0xFFC0392B),
-                                fontWeight: FontWeight.w600)),
+                        onPressed: () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                        ),
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(
+                            color: Color(0xFFC0392B),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ),
