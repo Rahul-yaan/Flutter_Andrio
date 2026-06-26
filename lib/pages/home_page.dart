@@ -1,9 +1,68 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'search_results_page.dart';
 import 'login_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final _fromCtrl = TextEditingController();
+  final _toCtrl = TextEditingController();
+
+  double? _fromLat, _fromLng, _toLat, _toLng;
+  bool _loading = false;
+  int _currentIndex = 0;
+
+  Future<void> _search() async {
+    if (_fromCtrl.text.trim().isEmpty || _toCtrl.text.trim().isEmpty) {
+      _snack('Enter both From and To locations');
+      return;
+    }
+    if (_fromLat == null || _toLat == null) {
+      _snack('Please select locations from suggestions');
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    final result = await ApiService.searchHotels(
+      fromLat: _fromLat!,
+      fromLng: _fromLng!,
+      toLat: _toLat!,
+      toLng: _toLng!,
+    );
+
+    setState(() => _loading = false);
+
+    if (result['hotels'] != null) {
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SearchResultsPage(
+              hotels: List<Map<String, dynamic>>.from(result['hotels']),
+              fromLat: _fromLat!,
+              fromLng: _fromLng!,
+              toLat: _toLat!,
+              toLng: _toLng!,
+              fromCity: _fromCtrl.text,
+              toCity: _toCtrl.text,
+            ),
+          ),
+        );
+      }
+    } else {
+      _snack(result['error'] ?? 'Search failed');
+    }
+  }
+
+  void _snack(String msg) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
   @override
   Widget build(BuildContext context) {
@@ -15,28 +74,34 @@ class HomePage extends StatelessWidget {
             // Header
             Container(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-              color: const Color(0xFFC0392B),
+              decoration: const BoxDecoration(
+                color: Color(0xFFC0392B),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+              ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Expanded(
+                      const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Hi, Welcome 👋',
+                            Text(
+                              'Find Hotels',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                            const SizedBox(height: 2),
                             Text(
-                              'Find your perfect stay',
+                              'Search hotels on your route',
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.75),
+                                color: Colors.white70,
                                 fontSize: 13,
                               ),
                             ),
@@ -46,7 +111,7 @@ class HomePage extends StatelessWidget {
                       IconButton(
                         onPressed: () async {
                           await ApiService.clearToken();
-                          if (context.mounted) {
+                          if (mounted) {
                             Navigator.pushAndRemoveUntil(
                               context,
                               MaterialPageRoute(
@@ -60,33 +125,99 @@ class HomePage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  // Search bar
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.search,
-                          color: Color(0xFFC0392B),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Search hotels, cities...',
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 14,
+                  const SizedBox(height: 16),
+
+                  // From field
+                  _LocationField(
+                    controller: _fromCtrl,
+                    hint: 'From — Starting city',
+                    icon: Icons.radio_button_checked,
+                    iconColor: const Color(0xFF27AE60),
+                    onPlaceSelected: (lat, lng) {
+                      setState(() {
+                        _fromLat = lat;
+                        _fromLng = lng;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Swap button + To field
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            final tempText = _fromCtrl.text;
+                            _fromCtrl.text = _toCtrl.text;
+                            _toCtrl.text = tempText;
+                            final tempLat = _fromLat;
+                            final tempLng = _fromLng;
+                            _fromLat = _toLat;
+                            _fromLng = _toLng;
+                            _toLat = tempLat;
+                            _toLng = tempLng;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.swap_vert,
+                            color: Colors.white,
+                            size: 20,
                           ),
                         ),
-                      ],
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _LocationField(
+                          controller: _toCtrl,
+                          hint: 'To — Destination city',
+                          icon: Icons.location_on,
+                          iconColor: const Color(0xFFC0392B),
+                          onPlaceSelected: (lat, lng) {
+                            setState(() {
+                              _toLat = lat;
+                              _toLng = lng;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Search button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed: _loading ? null : _search,
+                      icon: _loading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                color: Color(0xFFC0392B),
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(Icons.search, size: 20),
+                      label: Text(_loading ? 'Searching...' : 'Search Hotels'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFFC0392B),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
                     ),
                   ),
                 ],
@@ -101,7 +232,7 @@ class HomePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Featured Hotels',
+                      'How it works',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -109,26 +240,23 @@ class HomePage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      height: 170,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: 4,
-                        separatorBuilder: (_, _) => const SizedBox(width: 12),
-                        itemBuilder: (_, i) => _HotelCard(index: i),
-                      ),
+                    _HowItWorksCard(
+                      icon: Icons.search,
+                      title: 'Search Your Route',
+                      desc: 'Enter your starting city and destination',
                     ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Your Bookings',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A1A1A),
-                      ),
+                    const SizedBox(height: 10),
+                    _HowItWorksCard(
+                      icon: Icons.map_outlined,
+                      title: 'View on Map',
+                      desc: 'See all hotels along your route on the map',
                     ),
-                    const SizedBox(height: 12),
-                    _BookingCard(),
+                    const SizedBox(height: 10),
+                    _HowItWorksCard(
+                      icon: Icons.hotel,
+                      title: 'Book & Stay',
+                      desc: 'Pick your hotel and book instantly',
+                    ),
                   ],
                 ),
               ),
@@ -137,18 +265,17 @@ class HomePage extends StatelessWidget {
         ),
       ),
 
-      // Bottom nav
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFFC0392B),
         unselectedItemColor: const Color(0xFFBBBBBB),
-        currentIndex: 0,
+        currentIndex: _currentIndex,
+        onTap: (i) => setState(() => _currentIndex = i),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             label: 'Home',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
             label: 'Bookings',
@@ -163,84 +290,121 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _HotelCard extends StatelessWidget {
-  final int index;
-  const _HotelCard({required this.index});
+class _LocationField extends StatefulWidget {
+  final TextEditingController controller;
+  final String hint;
+  final IconData icon;
+  final Color iconColor;
+  final Function(double lat, double lng) onPlaceSelected;
 
-  static const _names = [
-    'Grand Plaza',
-    'Comfort Inn',
-    'City Stay',
-    'Royal Suites',
-  ];
-  static const _prices = ['₹2,499', '₹1,299', '₹899', '₹3,799'];
-  static const _stars = [5, 4, 3, 5];
+  const _LocationField({
+    required this.controller,
+    required this.hint,
+    required this.icon,
+    required this.iconColor,
+    required this.onPlaceSelected,
+  });
+
+  @override
+  State<_LocationField> createState() => _LocationFieldState();
+}
+
+class _LocationFieldState extends State<_LocationField> {
+  List<Map<String, dynamic>> _suggestions = [];
+  bool _showSuggestions = false;
+
+  Future<void> _getSuggestions(String input) async {
+    if (input.isEmpty) {
+      setState(() => _suggestions = []);
+      return;
+    }
+
+    final results = await ApiService.getPlaceSuggestions(input);
+    setState(() {
+      _suggestions = results;
+      _showSuggestions = results.isNotEmpty;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 130,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEEEEEE), width: 0.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 90,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF5E8E8),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(14),
-                topRight: Radius.circular(14),
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: TextField(
+            controller: widget.controller,
+            style: const TextStyle(fontSize: 14),
+            decoration: InputDecoration(
+              hintText: widget.hint,
+              hintStyle: const TextStyle(
+                color: Color(0xFFAAAAAA),
+                fontSize: 13,
+              ),
+              prefixIcon: Icon(widget.icon, color: widget.iconColor, size: 18),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 14,
               ),
             ),
-            child: const Center(
-              child: Icon(Icons.hotel, size: 36, color: Color(0xFFC0392B)),
-            ),
+            onChanged: _getSuggestions,
           ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _names[index],
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '★' * _stars[index],
-                  style: const TextStyle(
-                    fontSize: 10,
-                    color: Color(0xFFF39C12),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${_prices[index]}/night',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFC0392B),
-                  ),
+        ),
+        if (_showSuggestions)
+          Container(
+            margin: const EdgeInsets.only(top: 2),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
                 ),
               ],
             ),
+            child: Column(
+              children: _suggestions.map((s) {
+                return ListTile(
+                  dense: true,
+                  leading: const Icon(
+                    Icons.location_on,
+                    color: Color(0xFFC0392B),
+                    size: 18,
+                  ),
+                  title: Text(
+                    s['description'] ?? '',
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  onTap: () {
+                    widget.controller.text = s['description'] ?? '';
+                    widget.onPlaceSelected(s['lat'], s['lng']);
+                    setState(() => _showSuggestions = false);
+                  },
+                );
+              }).toList(),
+            ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }
 
-class _BookingCard extends StatelessWidget {
+class _HowItWorksCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String desc;
+
+  const _HowItWorksCard({
+    required this.icon,
+    required this.title,
+    required this.desc,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -248,53 +412,41 @@ class _BookingCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEEEEEE), width: 0.5),
+        border: Border.all(color: const Color(0xFFEEEEEE)),
       ),
       child: Row(
         children: [
           Container(
-            width: 46,
-            height: 46,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: const Color(0xFFF5E8E8),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.hotel, color: Color(0xFFC0392B), size: 24),
+            child: Icon(icon, color: const Color(0xFFC0392B), size: 22),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Grand Plaza Hotel',
-                  style: TextStyle(
+                  title,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1A1A1A),
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
-                  'Dec 15 – Dec 18 · 3 nights',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
+                  desc,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF888888),
+                  ),
                 ),
               ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAFAF1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Text(
-              'Confirmed',
-              style: TextStyle(
-                fontSize: 11,
-                color: Color(0xFF27AE60),
-                fontWeight: FontWeight.w500,
-              ),
             ),
           ),
         ],
