@@ -1,6 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
+  // Singleton pattern
+  static final AuthService _instance = AuthService._internal();
+  factory AuthService() => _instance;
+  AuthService._internal();
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? _verificationId;
 
@@ -9,17 +14,29 @@ class AuthService {
     required Function() onCodeSent,
     required Function(String) onError,
   }) async {
+    print('SENDING OTP TO: $phoneNumber');
     await _auth.verifyPhoneNumber(
       phoneNumber: phoneNumber,
-      verificationCompleted: (_) {},
-      verificationFailed: (e) => onError(e.message ?? 'OTP send failed'),
-      codeSent: (verificationId, _) {
+      verificationCompleted: (cred) {
+        print('VERIFICATION COMPLETED AUTOMATICALLY');
+      },
+      verificationFailed: (e) {
+        print('FIREBASE ERROR CODE: ${e.code}');
+        print('FIREBASE ERROR MESSAGE: ${e.message}');
+        onError(e.message ?? 'OTP send failed');
+      },
+      codeSent: (verificationId, resendToken) {
+        print('CODE SENT SUCCESSFULLY, verificationId: $verificationId');
         _verificationId = verificationId;
         onCodeSent();
       },
-      codeAutoRetrievalTimeout: (id) => _verificationId = id,
+      codeAutoRetrievalTimeout: (id) {
+        print('AUTO RETRIEVAL TIMEOUT: $id');
+        _verificationId = id;
+      },
       timeout: const Duration(seconds: 60),
     );
+    print('verifyPhoneNumber CALL COMPLETED');
   }
 
   Future<String?> verifyOtp(String smsCode) async {
@@ -31,7 +48,8 @@ class AuthService {
       );
       final result = await _auth.signInWithCredential(credential);
       return await result.user?.getIdToken();
-    } catch (_) {
+    } catch (e) {
+      print('OTP VERIFICATION ERROR: $e');
       return null;
     }
   }

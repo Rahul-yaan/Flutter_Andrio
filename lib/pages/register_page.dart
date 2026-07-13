@@ -40,9 +40,23 @@ class _RegisterPageState extends State<RegisterPage> {
       phone: '+91$phone',
     );
 
-    if (result['error'] != null) {
+    print("========== REGISTER RESPONSE ==========");
+    print(result);
+    print("======================================");
+
+    // Check for any kind of error response
+    if (result['error'] != null || result['errors'] != null) {
       setState(() => _loading = false);
-      _snack(result['error']);
+      final errorMsg =
+          result['error'] ?? result['message'] ?? 'Registration failed';
+      _snack(errorMsg);
+      return;
+    }
+
+    // Guard against missing user_id
+    if (result['user_id'] == null) {
+      setState(() => _loading = false);
+      _snack('Registration failed. Please try again.');
       return;
     }
 
@@ -75,7 +89,6 @@ class _RegisterPageState extends State<RegisterPage> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // Red header
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(24, 60, 24, 28),
@@ -108,8 +121,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ],
             ),
           ),
-
-          // Form
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
