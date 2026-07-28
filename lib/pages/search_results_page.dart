@@ -403,15 +403,78 @@ class _HotelMapCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                height: 80,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5E8E8),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                  child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 32),
-                ),
+              Builder(
+                builder: (context) {
+                  String? imagePath;
+                  if (hotel['primary_image'] != null) {
+                    if (hotel['primary_image'] is Map) {
+                      imagePath = hotel['primary_image']['image_path'];
+                    } else if (hotel['primary_image'] is String) {
+                      imagePath = hotel['primary_image'];
+                    }
+                  } else if (hotel['images'] != null && hotel['images'] is List && hotel['images'].isNotEmpty) {
+                    var firstImage = hotel['images'][0];
+                    if (firstImage is Map) {
+                      imagePath = firstImage['image_path'] ?? firstImage['url'];
+                    } else if (firstImage is String) {
+                      imagePath = firstImage;
+                    }
+                  } else if (hotel['image'] != null && hotel['image'] is String) {
+                    imagePath = hotel['image'];
+                  }
+
+                  if (imagePath == null) {
+                    return Container(
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5E8E8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 32),
+                      ),
+                    );
+                  }
+
+                  String baseUrl = dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? '';
+                  String url1 = '$baseUrl/storage/$imagePath';
+                  String url2 = '$baseUrl/public/storage/$imagePath';
+                  String url3 = '$baseUrl/$imagePath';
+                  String url4 = '$baseUrl/public/$imagePath';
+
+                  Widget buildFallbackChain() {
+                    return Image.network(
+                      url1,
+                      fit: BoxFit.cover,
+                      errorBuilder: (c, e1, s1) => Image.network(
+                        url2,
+                        fit: BoxFit.cover,
+                        errorBuilder: (c, e2, s2) => Image.network(
+                          url3,
+                          fit: BoxFit.cover,
+                          errorBuilder: (c, e3, s3) => Image.network(
+                            url4,
+                            fit: BoxFit.cover,
+                            errorBuilder: (c, e4, s4) => const Center(
+                              child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 32),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return Container(
+                    height: 80,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5E8E8),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: buildFallbackChain(),
+                  );
+                }
               ),
               const SizedBox(height: 8),
               Text(
@@ -459,19 +522,85 @@ class _HotelListCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF5E8E8),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(14),
-                  bottomLeft: Radius.circular(14),
-                ),
-              ),
-              child: const Center(
-                child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 36),
-              ),
+            Builder(
+              builder: (context) {
+                String? imagePath;
+                if (hotel['primary_image'] != null) {
+                  if (hotel['primary_image'] is Map) {
+                    imagePath = hotel['primary_image']['image_path'];
+                  } else if (hotel['primary_image'] is String) {
+                    imagePath = hotel['primary_image'];
+                  }
+                } else if (hotel['images'] != null && hotel['images'] is List && hotel['images'].isNotEmpty) {
+                  var firstImage = hotel['images'][0];
+                  if (firstImage is Map) {
+                    imagePath = firstImage['image_path'] ?? firstImage['url'];
+                  } else if (firstImage is String) {
+                    imagePath = firstImage;
+                  }
+                } else if (hotel['image'] != null && hotel['image'] is String) {
+                  imagePath = hotel['image'];
+                }
+
+                if (imagePath == null) {
+                  return Container(
+                    width: 100,
+                    height: 100,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF5E8E8),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(14),
+                        bottomLeft: Radius.circular(14),
+                      ),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 36),
+                    ),
+                  );
+                }
+
+                String baseUrl = dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? '';
+                String url1 = '$baseUrl/storage/$imagePath';
+                String url2 = '$baseUrl/public/storage/$imagePath';
+                String url3 = '$baseUrl/$imagePath';
+                String url4 = '$baseUrl/public/$imagePath';
+
+                Widget buildFallbackChain() {
+                  return Image.network(
+                    url1,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, e1, s1) => Image.network(
+                      url2,
+                      fit: BoxFit.cover,
+                      errorBuilder: (c, e2, s2) => Image.network(
+                        url3,
+                        fit: BoxFit.cover,
+                        errorBuilder: (c, e3, s3) => Image.network(
+                          url4,
+                          fit: BoxFit.cover,
+                          errorBuilder: (c, e4, s4) => const Center(
+                            child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 36),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return Container(
+                  width: 100,
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5E8E8),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(14),
+                      bottomLeft: Radius.circular(14),
+                    ),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: buildFallbackChain(),
+                );
+              }
             ),
             Expanded(
               child: Padding(

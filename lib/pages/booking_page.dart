@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../services/api_service.dart';
 
 class BookingPage extends StatefulWidget {
@@ -17,10 +19,61 @@ class _BookingPageState extends State<BookingPage> {
   final TextEditingController _logisticsNameController = TextEditingController();
   final TextEditingController _logisticsNumberController = TextEditingController();
   
-  String _paymentMethod = 'Cash On Delivery';
+  String _paymentMethod = 'Online Payment';
   bool _agreedToTerms = false;
   bool _loading = false;
   bool _booked = false;
+  
+  late Razorpay _razorpay;
+  int? _currentBookingId;
+
+  @override
+  void initState() {
+    super.initState();
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _razorpay.clear();
+  }
+
+  String? _lastTransactionId;
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    if (_currentBookingId == null) return;
+    setState(() => _loading = true);
+    final paymentId = response.paymentId ?? '';
+    final res = await ApiService.verifyPayment(
+      bookingId: _currentBookingId!,
+      razorpayPaymentId: paymentId,
+      razorpayOrderId: response.orderId ?? '',
+      razorpaySignature: response.signature ?? '',
+      transactionId: paymentId,
+    );
+    setState(() => _loading = false);
+    if (res.containsKey('error')) {
+      _showError(res['error']);
+    } else {
+      setState(() {
+        _lastTransactionId = paymentId;
+        _booked = true;
+      });
+    }
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    setState(() => _loading = false);
+    _showError('Payment failed: ${response.message}');
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    _showError('External wallet selected: ${response.walletName}');
+  }
 
   final List<String> _truckTypes = [
     '4 Wheel', '6 Wheel', '8 Wheel', '10 Wheel',
@@ -115,12 +168,36 @@ class _BookingPageState extends State<BookingPage> {
       paymentMethod: _paymentMethod,
     );
 
-    setState(() => _loading = false);
-
     if (res.containsKey('error')) {
+      setState(() => _loading = false);
       _showError(res['error']);
     } else {
-      setState(() => _booked = true);
+      final booking = res['booking'];
+      if (booking != null && booking['razorpay_order_id'] != null) {
+        _currentBookingId = booking['id'];
+        var options = {
+          'key': dotenv.env['RAZORPAY_KEY_ID'] ?? 'rzp_test_TEXWI4iBjCxWNh',
+          'amount': (double.parse(booking['total_payable'].toString()) * 100).toInt(),
+          'name': widget.hotel['name'] ?? 'Booking',
+          'description': 'Booking Payment',
+          'order_id': booking['razorpay_order_id'],
+          'prefill': {
+            'contact': _logisticsNumberController.text.trim(),
+            'email': ''
+          }
+        };
+        try {
+          _razorpay.open(options);
+        } catch (e) {
+          setState(() => _loading = false);
+          _showError(e.toString());
+        }
+      } else {
+        setState(() {
+          _loading = false;
+          _booked = true;
+        });
+      }
     }
   }
 
@@ -147,6 +224,10 @@ class _BookingPageState extends State<BookingPage> {
               const Icon(Icons.check_circle, color: Colors.green, size: 80),
               const SizedBox(height: 16),
               const Text('Booking Successful!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              if (_lastTransactionId != null && _lastTransactionId!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text('Transaction ID: $_lastTransactionId', style: const TextStyle(fontSize: 13, color: Color(0xFF666666), fontWeight: FontWeight.w500)),
+              ],
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
@@ -182,7 +263,7 @@ class _BookingPageState extends State<BookingPage> {
                 borderRadius: BorderRadius.circular(12),
                 image: widget.hotel['primary_image'] != null
                     ? DecorationImage(
-                        image: NetworkImage('http://127.0.0.1:8000/storage/' + widget.hotel['primary_image']['image_path']),
+                        image: NetworkImage('${dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? ''}/storage/${widget.hotel['primary_image']['image_path']}'),
                         fit: BoxFit.cover,
                       )
                     : null,
@@ -335,7 +416,7 @@ class _BookingPageState extends State<BookingPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Total Amount', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      const Text('₹42.37', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text('₹${_price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -351,7 +432,7 @@ class _BookingPageState extends State<BookingPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('GST ( 18% )', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      const Text('₹7.63', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text('₹${_gstAmount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const Divider(height: 24),
@@ -359,7 +440,7 @@ class _BookingPageState extends State<BookingPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Total Payable Amount', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                      const Text('₹50.00', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                      Text('₹${_totalPayable.toStringAsFixed(2)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ],
@@ -374,34 +455,17 @@ class _BookingPageState extends State<BookingPage> {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => setState(() => _paymentMethod = 'Cash On Delivery'),
+                    onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _paymentMethod == 'Cash On Delivery' ? const Color(0xFFC0392B) : Colors.white,
-                      foregroundColor: _paymentMethod == 'Cash On Delivery' ? Colors.white : Colors.black,
+                      backgroundColor: const Color(0xFFC0392B),
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(color: _paymentMethod == 'Cash On Delivery' ? Colors.transparent : Colors.grey[300]!),
+                        side: const BorderSide(color: Colors.transparent),
                       ),
                       elevation: 0,
                     ),
-                    icon: Icon(Icons.money, size: 16, color: _paymentMethod == 'Cash On Delivery' ? Colors.white : const Color(0xFFC0392B)),
-                    label: const Text('Cash On Delivery', style: TextStyle(fontSize: 11)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => setState(() => _paymentMethod = 'Online Payment'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _paymentMethod == 'Online Payment' ? const Color(0xFFC0392B) : Colors.white,
-                      foregroundColor: _paymentMethod == 'Online Payment' ? Colors.white : Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(color: _paymentMethod == 'Online Payment' ? Colors.transparent : Colors.grey[300]!),
-                      ),
-                      elevation: 0,
-                    ),
-                    icon: Icon(Icons.payment, size: 16, color: _paymentMethod == 'Online Payment' ? Colors.white : Colors.black),
+                    icon: const Icon(Icons.payment, size: 16, color: Colors.white),
                     label: const Text('Online Payment', style: TextStyle(fontSize: 11)),
                   ),
                 ),

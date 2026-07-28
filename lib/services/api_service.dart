@@ -356,4 +356,31 @@ static Future<Map<String, dynamic>> updateProfile({
     return {'error': 'Connection failed: $e'};
   }
 }
+
+static Future<Map<String, dynamic>> verifyPayment({
+  required int bookingId,
+  required String razorpayPaymentId,
+  required String razorpayOrderId,
+  required String razorpaySignature,
+  String? transactionId,
+}) async {
+  try {
+    final token = await getToken();
+    final res = await http.post(
+      Uri.parse('$baseUrl/bookings/$bookingId/verify-payment'),
+      headers: {..._headers, 'Authorization': 'Bearer $token'},
+      body: jsonEncode({
+        'razorpay_payment_id': razorpayPaymentId,
+        'razorpay_order_id': razorpayOrderId,
+        'razorpay_signature': razorpaySignature,
+        'transaction_id': transactionId ?? razorpayPaymentId,
+      }),
+    ).timeout(const Duration(seconds: 10));
+    return jsonDecode(res.body);
+  } catch (e) {
+    print('VERIFY PAYMENT ERROR: $e');
+    return {'error': 'Connection failed: $e'};
+  }
+}
+
 }

@@ -203,18 +203,75 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       backgroundColor: const Color(0xFFF7F7F7),
       body: CustomScrollView(
         slivers: [
-          // Header image
           SliverAppBar(
             expandedHeight: 220,
             pinned: true,
             backgroundColor: const Color(0xFFC0392B),
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                color: const Color(0xFFF5E8E8),
-                child: const Center(
-                  child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
-                ),
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Builder(
+                    builder: (context) {
+                      String? imagePath;
+                      if (_hotel!['primary_image'] != null) {
+                        if (_hotel!['primary_image'] is Map) {
+                          imagePath = _hotel!['primary_image']['image_path'];
+                        } else if (_hotel!['primary_image'] is String) {
+                          imagePath = _hotel!['primary_image'];
+                        }
+                      } else if (_hotel!['images'] != null && _hotel!['images'] is List && _hotel!['images'].isNotEmpty) {
+                        var firstImage = _hotel!['images'][0];
+                        if (firstImage is Map) {
+                          imagePath = firstImage['image_path'] ?? firstImage['url'];
+                        } else if (firstImage is String) {
+                          imagePath = firstImage;
+                        }
+                      } else if (_hotel!['image'] != null && _hotel!['image'] is String) {
+                        imagePath = _hotel!['image'];
+                      }
+
+                      if (imagePath != null) {
+                        String baseUrl = dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? '';
+                        String url1 = '$baseUrl/storage/$imagePath';
+                        String url2 = '$baseUrl/public/storage/$imagePath';
+                        String url3 = '$baseUrl/$imagePath';
+                        String url4 = '$baseUrl/public/$imagePath';
+
+                        return Image.network(
+                          url1,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error1, stack1) => Image.network(
+                            url2,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error2, stack2) => Image.network(
+                              url3,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error3, stack3) => Image.network(
+                                url4,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error4, stack4) => Container(
+                                  color: const Color(0xFFF5E8E8),
+                                  child: const Center(
+                                    child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      } else {
+                        return Container(
+                          color: const Color(0xFFF5E8E8),
+                          child: const Center(
+                            child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
           ),
@@ -329,7 +386,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           ),
                           child: Column(
                             children: [
-                              const Text('Available Rooms',
+                              const Text('Available Slots',
                                   style: TextStyle(
                                       fontSize: 12,
                                       color: Color(0xFF888888))),
@@ -386,10 +443,12 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   Builder(
                     builder: (context) {
                       List<dynamic> amenitiesList = [];
-                      if (_hotel!['amenities'] != null && _hotel!['amenities'].toString().isNotEmpty) {
-                        amenitiesList = _hotel!['amenities'] is List 
-                            ? _hotel!['amenities'] as List 
-                            : _hotel!['amenities'].toString().split(',');
+                      if (_hotel!['amenities'] != null) {
+                        if (_hotel!['amenities'] is List) {
+                          amenitiesList = _hotel!['amenities'] as List;
+                        } else if (_hotel!['amenities'].toString().isNotEmpty) {
+                          amenitiesList = _hotel!['amenities'].toString().split(',');
+                        }
                       }
                       
                       if (amenitiesList.isEmpty) {
@@ -411,27 +470,30 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                             amenityName = amenity['name'].toString();
                           } else {
                             amenityName = amenity.toString();
+                            amenityName = amenity.toString().trim();
                           }
-                          // Clean up string like "['wifi']"
-                          amenityName = amenityName.replaceAll('[', '').replaceAll(']', '').replaceAll('\'', '').replaceAll('"', '').trim();
-                          if (amenityName.isEmpty) return const SizedBox.shrink();
-
-                          return SizedBox(
-                            width: (MediaQuery.of(context).size.width - 44) / 2, // 2 columns minus padding
+                          return Container(
+                            width: (MediaQuery.of(context).size.width - 56) / 2, // 2 columns
+                            margin: const EdgeInsets.only(bottom: 12),
                             child: Row(
-                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.check_box, size: 18, color: Colors.black87),
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF5E8E8),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Icon(Icons.check, color: Color(0xFFC0392B), size: 16),
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    amenityName,
+                                    amenityName.trim(),
                                     style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.black87,
+                                      fontSize: 14,
+                                      color: Color(0xFF1A1A1A),
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -537,7 +599,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             ),
             child: Text(
               _hotel!['available_rooms'] == 0
-                  ? 'No Rooms Available'
+                  ? 'No Slots Available'
                   : 'Book Now — ₹${_hotel!['price_per_night']}/night',
               style: const TextStyle(
                 fontSize: 16,
