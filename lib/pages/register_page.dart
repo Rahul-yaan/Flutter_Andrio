@@ -45,7 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
     print("======================================");
 
     // Check for any kind of error response
-    if (result['error'] != null || result['errors'] != null) {
+    if (result['error'] != null || result['errors'] != null || (result['user_id'] == null && result['message'] != null)) {
       setState(() => _loading = false);
       final errorMsg =
           result['error'] ?? result['message'] ?? 'Registration failed';
