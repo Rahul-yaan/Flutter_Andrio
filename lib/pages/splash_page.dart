@@ -15,25 +15,19 @@ class _SplashPageState extends State<SplashPage> {
 
   final List<Map<String, dynamic>> _pages = [
     {
-      'icon': Icons.search_rounded,
-      'color': const Color(0xFF5B8DEF),
-      'bg': const Color(0xFFEAF0FD),
+      'image': 'assets/images/welcome.jpeg',
       'title': 'Welcome to Yaan!',
       'desc':
           'Find and reserve highway hotels easily. Enjoy comfortable and convenient stays wherever you are.',
     },
     {
-      'icon': Icons.calendar_month_rounded,
-      'color': const Color(0xFFE67E22),
-      'bg': const Color(0xFFFDF0E0),
+      'image': 'assets/images/discover.jpeg',
       'title': 'Discover and Book',
       'desc':
           'Discover hotels with hassle-free booking on almost any budget. We help you find the perfect quality.',
     },
     {
-      'icon': Icons.schedule_rounded,
-      'color': const Color(0xFF27AE60),
-      'bg': const Color(0xFFE8F8F0),
+      'image': 'assets/images/manage.jpeg',
       'title': 'Manage Your Schedule',
       'desc':
           'Avoid getting early. Manage your schedule and enjoy a drive, book today and make tomorrow more comfortable.',
@@ -78,18 +72,19 @@ class _SplashPageState extends State<SplashPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Illustration placeholder
+                        // Illustration image
                         Container(
-                          width: 220,
-                          height: 220,
+                          width: 240,
+                          height: 240,
                           decoration: BoxDecoration(
-                            color: p['bg'] as Color,
-                            borderRadius: BorderRadius.circular(32),
+                            borderRadius: BorderRadius.circular(24),
                           ),
-                          child: Icon(
-                            p['icon'] as IconData,
-                            size: 100,
-                            color: p['color'] as Color,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Image.asset(
+                              p['image'] as String,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 40),
