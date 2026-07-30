@@ -173,17 +173,22 @@ class _BookingPageState extends State<BookingPage> {
       _showError(res['error']);
     } else {
       final booking = res['booking'];
-      if (booking != null && booking['razorpay_order_id'] != null) {
-        _currentBookingId = booking['id'];
+      final orderId = res['order_id'] ?? res['razorpay_order_id'] ?? (booking != null ? booking['razorpay_order_id'] : null);
+      final keyId = res['key'] ?? res['razorpay_key_id'] ?? dotenv.env['RAZORPAY_KEY_ID'] ?? 'rzp_test_TJg3E5sTryKc0U';
+      final amountPaise = res['amount'] ?? res['amount_in_paise'] ?? ((double.tryParse(booking?['total_payable']?.toString() ?? '0') ?? 0) * 100).toInt();
+
+      if (orderId != null) {
+        _currentBookingId = booking?['id'];
+        String cleanContact = _logisticsNumberController.text.trim().replaceAll(RegExp(r'\D'), '');
         var options = {
-          'key': dotenv.env['RAZORPAY_KEY_ID'] ?? 'rzp_test_TEXWI4iBjCxWNh',
-          'amount': (double.parse(booking['total_payable'].toString()) * 100).toInt(),
+          'key': keyId,
+          'amount': amountPaise,
           'name': widget.hotel['name'] ?? 'Booking',
           'description': 'Booking Payment',
-          'order_id': booking['razorpay_order_id'],
+          'order_id': orderId,
           'prefill': {
-            'contact': _logisticsNumberController.text.trim(),
-            'email': ''
+            'contact': cleanContact.isNotEmpty ? cleanContact : '9876543210',
+            'email': 'user@example.com'
           }
         };
         try {
