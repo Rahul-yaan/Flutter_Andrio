@@ -183,12 +183,17 @@ class _BookingPageState extends State<BookingPage> {
         var options = {
           'key': keyId,
           'amount': amountPaise,
+          'currency': 'INR',
           'name': widget.hotel['name'] ?? 'Booking',
           'description': 'Booking Payment',
           'order_id': orderId,
           'prefill': {
             'contact': cleanContact.isNotEmpty ? cleanContact : '9876543210',
             'email': 'user@example.com'
+          },
+          'retry': {
+            'enabled': true,
+            'max_count': 1
           }
         };
         try {
