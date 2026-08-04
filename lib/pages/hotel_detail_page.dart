@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../services/api_service.dart';
 import 'booking_page.dart';
 import 'login_page.dart';
 import 'hotel_map_screen.dart';
+import '../utils/image_utils.dart';
 class HotelDetailPage extends StatefulWidget {
   final int hotelId;
   const HotelDetailPage({super.key, required this.hotelId});
@@ -214,50 +211,16 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 children: [
                   Builder(
                     builder: (context) {
-                      String? imagePath;
-                      if (_hotel!['primary_image'] != null) {
-                        if (_hotel!['primary_image'] is Map) {
-                          imagePath = _hotel!['primary_image']['image_path'];
-                        } else if (_hotel!['primary_image'] is String) {
-                          imagePath = _hotel!['primary_image'];
-                        }
-                      } else if (_hotel!['images'] != null && _hotel!['images'] is List && _hotel!['images'].isNotEmpty) {
-                        var firstImage = _hotel!['images'][0];
-                        if (firstImage is Map) {
-                          imagePath = firstImage['image_path'] ?? firstImage['url'];
-                        } else if (firstImage is String) {
-                          imagePath = firstImage;
-                        }
-                      } else if (_hotel!['image'] != null && _hotel!['image'] is String) {
-                        imagePath = _hotel!['image'];
-                      }
+                      String? imageUrl = ImageUtils.getHotelImageUrl(_hotel);
 
-                      if (imagePath != null) {
-                        String baseUrl = dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? '';
-                        String url1 = '$baseUrl/storage/$imagePath';
-                        String url2 = '$baseUrl/public/storage/$imagePath';
-                        String url3 = '$baseUrl/$imagePath';
-                        String url4 = '$baseUrl/public/$imagePath';
-
+                      if (imageUrl != null) {
                         return Image.network(
-                          url1,
+                          imageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error1, stack1) => Image.network(
-                            url2,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error2, stack2) => Image.network(
-                              url3,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error3, stack3) => Image.network(
-                                url4,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error4, stack4) => Container(
-                                  color: const Color(0xFFF5E8E8),
-                                  child: const Center(
-                                    child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
-                                  ),
-                                ),
-                              ),
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: const Color(0xFFF5E8E8),
+                            child: const Center(
+                              child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
                             ),
                           ),
                         );

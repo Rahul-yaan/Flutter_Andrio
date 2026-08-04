@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/api_service.dart';
+import '../utils/image_utils.dart';
 
 class MyBookingsPage extends StatefulWidget {
   const MyBookingsPage({super.key});
@@ -131,22 +131,27 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                           children: [
                             Row(
                               children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF5E8E8),
-                                    borderRadius: BorderRadius.circular(10),
-                                    image: hotel != null && hotel['primary_image'] != null
-                                        ? DecorationImage(
-                                            image: NetworkImage('${dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? ''}/storage/${hotel['primary_image']['image_path']}'),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : null,
-                                  ),
-                                  child: hotel == null || hotel['primary_image'] == null
-                                      ? const Icon(Icons.hotel, color: Color(0xFFC0392B))
-                                      : null,
+                                Builder(
+                                  builder: (context) {
+                                    String? imageUrl = ImageUtils.getHotelImageUrl(hotel);
+                                    return Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF5E8E8),
+                                        borderRadius: BorderRadius.circular(10),
+                                        image: imageUrl != null
+                                            ? DecorationImage(
+                                                image: NetworkImage(imageUrl),
+                                                fit: BoxFit.cover,
+                                              )
+                                            : null,
+                                      ),
+                                      child: imageUrl == null
+                                          ? const Icon(Icons.hotel, color: Color(0xFFC0392B))
+                                          : null,
+                                    );
+                                  },
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(

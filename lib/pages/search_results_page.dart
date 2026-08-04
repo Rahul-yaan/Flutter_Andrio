@@ -8,6 +8,7 @@ import 'hotel_map_screen.dart';
 import 'booking_page.dart';
 import 'login_page.dart';
 import '../services/api_service.dart';
+import '../utils/image_utils.dart';
 
 class SearchResultsPage extends StatefulWidget {
   final List<Map<String, dynamic>> hotels;
@@ -405,25 +406,9 @@ class _HotelMapCard extends StatelessWidget {
             children: [
               Builder(
                 builder: (context) {
-                  String? imagePath;
-                  if (hotel['primary_image'] != null) {
-                    if (hotel['primary_image'] is Map) {
-                      imagePath = hotel['primary_image']['image_path'];
-                    } else if (hotel['primary_image'] is String) {
-                      imagePath = hotel['primary_image'];
-                    }
-                  } else if (hotel['images'] != null && hotel['images'] is List && hotel['images'].isNotEmpty) {
-                    var firstImage = hotel['images'][0];
-                    if (firstImage is Map) {
-                      imagePath = firstImage['image_path'] ?? firstImage['url'];
-                    } else if (firstImage is String) {
-                      imagePath = firstImage;
-                    }
-                  } else if (hotel['image'] != null && hotel['image'] is String) {
-                    imagePath = hotel['image'];
-                  }
+                  String? imageUrl = ImageUtils.getHotelImageUrl(hotel);
 
-                  if (imagePath == null) {
+                  if (imageUrl == null) {
                     return Container(
                       height: 80,
                       decoration: BoxDecoration(
@@ -436,34 +421,6 @@ class _HotelMapCard extends StatelessWidget {
                     );
                   }
 
-                  String baseUrl = dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? '';
-                  String url1 = '$baseUrl/storage/$imagePath';
-                  String url2 = '$baseUrl/public/storage/$imagePath';
-                  String url3 = '$baseUrl/$imagePath';
-                  String url4 = '$baseUrl/public/$imagePath';
-
-                  Widget buildFallbackChain() {
-                    return Image.network(
-                      url1,
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e1, s1) => Image.network(
-                        url2,
-                        fit: BoxFit.cover,
-                        errorBuilder: (c, e2, s2) => Image.network(
-                          url3,
-                          fit: BoxFit.cover,
-                          errorBuilder: (c, e3, s3) => Image.network(
-                            url4,
-                            fit: BoxFit.cover,
-                            errorBuilder: (c, e4, s4) => const Center(
-                              child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 32),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-
                   return Container(
                     height: 80,
                     width: double.infinity,
@@ -472,7 +429,13 @@ class _HotelMapCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: buildFallbackChain(),
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (c, e, s) => const Center(
+                        child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 32),
+                      ),
+                    ),
                   );
                 }
               ),
@@ -524,25 +487,9 @@ class _HotelListCard extends StatelessWidget {
           children: [
             Builder(
               builder: (context) {
-                String? imagePath;
-                if (hotel['primary_image'] != null) {
-                  if (hotel['primary_image'] is Map) {
-                    imagePath = hotel['primary_image']['image_path'];
-                  } else if (hotel['primary_image'] is String) {
-                    imagePath = hotel['primary_image'];
-                  }
-                } else if (hotel['images'] != null && hotel['images'] is List && hotel['images'].isNotEmpty) {
-                  var firstImage = hotel['images'][0];
-                  if (firstImage is Map) {
-                    imagePath = firstImage['image_path'] ?? firstImage['url'];
-                  } else if (firstImage is String) {
-                    imagePath = firstImage;
-                  }
-                } else if (hotel['image'] != null && hotel['image'] is String) {
-                  imagePath = hotel['image'];
-                }
+                String? imageUrl = ImageUtils.getHotelImageUrl(hotel);
 
-                if (imagePath == null) {
+                if (imageUrl == null) {
                   return Container(
                     width: 100,
                     height: 100,
@@ -559,34 +506,6 @@ class _HotelListCard extends StatelessWidget {
                   );
                 }
 
-                String baseUrl = dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? '';
-                String url1 = '$baseUrl/storage/$imagePath';
-                String url2 = '$baseUrl/public/storage/$imagePath';
-                String url3 = '$baseUrl/$imagePath';
-                String url4 = '$baseUrl/public/$imagePath';
-
-                Widget buildFallbackChain() {
-                  return Image.network(
-                    url1,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e1, s1) => Image.network(
-                      url2,
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e2, s2) => Image.network(
-                        url3,
-                        fit: BoxFit.cover,
-                        errorBuilder: (c, e3, s3) => Image.network(
-                          url4,
-                          fit: BoxFit.cover,
-                          errorBuilder: (c, e4, s4) => const Center(
-                            child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 36),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-
                 return Container(
                   width: 100,
                   height: 100,
@@ -598,7 +517,13 @@ class _HotelListCard extends StatelessWidget {
                     ),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: buildFallbackChain(),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, e, s) => const Center(
+                      child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 36),
+                    ),
+                  ),
                 );
               }
             ),

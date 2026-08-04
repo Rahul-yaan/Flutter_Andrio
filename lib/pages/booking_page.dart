@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../services/api_service.dart';
+import '../utils/image_utils.dart';
 
 class BookingPage extends StatefulWidget {
   final Map<String, dynamic> hotel;
@@ -266,21 +267,26 @@ class _BookingPageState extends State<BookingPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Mocking the top UI from the screenshot for completeness
-            Container(
-              height: 180,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(12),
-                image: widget.hotel['primary_image'] != null
-                    ? DecorationImage(
-                        image: NetworkImage('${dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? ''}/storage/${widget.hotel['primary_image']['image_path']}'),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: widget.hotel['primary_image'] == null
-                  ? const Center(child: Icon(Icons.hotel, size: 50, color: Colors.grey))
-                  : null,
+            Builder(
+              builder: (context) {
+                String? imageUrl = ImageUtils.getHotelImageUrl(widget.hotel);
+                return Container(
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(12),
+                    image: imageUrl != null
+                        ? DecorationImage(
+                            image: NetworkImage(imageUrl),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: imageUrl == null
+                      ? const Center(child: Icon(Icons.hotel, size: 50, color: Colors.grey))
+                      : null,
+                );
+              },
             ),
             const SizedBox(height: 16),
             Row(
