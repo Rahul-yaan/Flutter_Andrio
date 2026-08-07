@@ -32,7 +32,7 @@ class ApiService {
               'role': 'user',
             }),
           )
-          .timeout(const Duration(seconds: 35));
+          .timeout(const Duration(seconds: 60));
 
       return jsonDecode(res.body);
     } catch (e) {

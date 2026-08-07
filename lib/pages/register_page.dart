@@ -47,20 +47,35 @@ class _RegisterPageState extends State<RegisterPage> {
     // Check for any kind of error response
     if (result['error'] != null || result['errors'] != null) {
       setState(() => _loading = false);
-      final errorMsg =
-          result['error'] ?? result['message'] ?? 'Registration failed';
+      String errorMsg = 'Registration failed. Please try again.';
+      if (result['errors'] != null && result['errors'] is Map) {
+        final errMap = result['errors'] as Map;
+        if (errMap.isNotEmpty) {
+          final firstVal = errMap.values.first;
+          if (firstVal is List && firstVal.isNotEmpty) {
+            errorMsg = firstVal.first.toString();
+          } else {
+            errorMsg = firstVal.toString();
+          }
+        }
+      } else if (result['error'] != null) {
+        errorMsg = result['error'].toString();
+      } else if (result['message'] != null) {
+        errorMsg = result['message'].toString();
+      }
       _snack(errorMsg);
       return;
     }
 
     // Guard against missing user_id
-    if (result['user_id'] == null) {
+    final rawUserId = result['user_id'];
+    if (rawUserId == null) {
       setState(() => _loading = false);
       _snack('Registration failed. Please try again.');
       return;
     }
 
-    final userId = result['user_id'] as int;
+    final userId = rawUserId is int ? rawUserId : int.parse(rawUserId.toString());
 
     await _authService.sendOtp(
       phoneNumber: '+91$phone',
