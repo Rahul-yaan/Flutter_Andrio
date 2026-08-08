@@ -44,34 +44,42 @@ class _RegisterPageState extends State<RegisterPage> {
     print(result);
     print("======================================");
 
-    // Check for any kind of error response
-    if (result['error'] != null || result['errors'] != null) {
-      setState(() => _loading = false);
-      String errorMsg = 'Registration failed. Please try again.';
-      if (result['errors'] != null && result['errors'] is Map) {
-        final errMap = result['errors'] as Map;
-        if (errMap.isNotEmpty) {
-          final firstVal = errMap.values.first;
+    // Extract error message if any
+    String? extractErrorMessage(Map<String, dynamic> res) {
+      if (res['errors'] != null) {
+        final errors = res['errors'];
+        if (errors is Map && errors.isNotEmpty) {
+          final firstVal = errors.values.first;
           if (firstVal is List && firstVal.isNotEmpty) {
-            errorMsg = firstVal.first.toString();
-          } else {
-            errorMsg = firstVal.toString();
+            return firstVal.first.toString();
+          } else if (firstVal != null) {
+            return firstVal.toString();
           }
+        } else if (errors is List && errors.isNotEmpty) {
+          return errors.first.toString();
+        } else if (errors is String && errors.isNotEmpty) {
+          return errors;
         }
-      } else if (result['error'] != null) {
-        errorMsg = result['error'].toString();
-      } else if (result['message'] != null) {
-        errorMsg = result['message'].toString();
       }
-      _snack(errorMsg);
-      return;
+      if (res['error'] != null && res['error'].toString().trim().isNotEmpty) {
+        return res['error'].toString().trim();
+      }
+      if (res['message'] != null && res['message'].toString().trim().isNotEmpty) {
+        final msg = res['message'].toString().trim();
+        if (!msg.toLowerCase().contains('proceed to otp') &&
+            !msg.toLowerCase().contains('success')) {
+          return msg;
+        }
+      }
+      return null;
     }
 
-    // Guard against missing user_id
     final rawUserId = result['user_id'];
-    if (rawUserId == null) {
+    final errorMsg = extractErrorMessage(result);
+
+    if (errorMsg != null || rawUserId == null) {
       setState(() => _loading = false);
-      _snack('Registration failed. Please try again.');
+      _snack(errorMsg ?? 'Registration failed. Please try again.');
       return;
     }
 
