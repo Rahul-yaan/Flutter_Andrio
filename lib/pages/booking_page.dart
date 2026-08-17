@@ -82,12 +82,25 @@ class _BookingPageState extends State<BookingPage> {
     '22 Wheel', '22+ Wheel'
   ];
 
-  double get _price {
-    return double.tryParse(widget.hotel['price_per_night'].toString()) ?? 0;
+  double get _originalPrice {
+    return double.tryParse((widget.hotel['original_price'] ?? widget.hotel['price_per_night']).toString()) ?? 0;
   }
 
-  double get _gstAmount => _price * 0.18;
-  double get _totalPayable => _price + _gstAmount;
+  double get _discountPct {
+    return double.tryParse((widget.hotel['active_discount_percentage'] ?? 0).toString()) ?? 0;
+  }
+
+  double get _discountAmount {
+    if (widget.hotel['discount_amount'] != null) {
+      return double.tryParse(widget.hotel['discount_amount'].toString()) ?? 0;
+    }
+    return _originalPrice * (_discountPct / 100);
+  }
+
+  double get _discountedBasePrice => (_originalPrice - _discountAmount) > 0 ? (_originalPrice - _discountAmount) : 0;
+
+  double get _gstAmount => _discountedBasePrice * 0.18;
+  double get _totalPayable => _discountedBasePrice + _gstAmount;
 
   Future<void> _openMap() async {
     final lat = widget.hotel['latitude'];
@@ -431,16 +444,16 @@ class _BookingPageState extends State<BookingPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Total Amount', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      Text('₹${_price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text('Room Base Price', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      Text('₹${_originalPrice.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Promotion Applied', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      const Text('₹0.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text(_discountPct > 0 ? 'Offer Discount (${_discountPct.toStringAsFixed(0)}% OFF)' : 'Promotion Applied', style: TextStyle(fontSize: 12, color: _discountAmount > 0 ? const Color(0xFF27AE60) : Colors.grey, fontWeight: _discountAmount > 0 ? FontWeight.bold : FontWeight.normal)),
+                      Text(_discountAmount > 0 ? '-₹${_discountAmount.toStringAsFixed(2)}' : '₹0.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _discountAmount > 0 ? const Color(0xFF27AE60) : Colors.black)),
                     ],
                   ),
                   const SizedBox(height: 8),

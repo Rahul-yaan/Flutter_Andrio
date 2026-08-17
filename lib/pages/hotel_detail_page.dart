@@ -563,7 +563,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             child: Text(
               _hotel!['available_rooms'] == 0
                   ? 'No Slots Available'
-                  : 'Book Now — ₹${_hotel!['price_per_night']}/night',
+                  : 'Book Now — ₹${_hotel!['discounted_price'] ?? _hotel!['price_per_night']}/night',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

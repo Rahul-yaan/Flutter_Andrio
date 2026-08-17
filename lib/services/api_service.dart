@@ -262,6 +262,8 @@ class ApiService {
     required String logisticsName,
     required String logisticsNumber,
     required String paymentMethod,
+    double? discountPercentage,
+    double? discountAmount,
   }) async {
     try {
       final token = await getToken();
@@ -276,6 +278,8 @@ class ApiService {
           'logistics_name': logisticsName,
           'logistics_number': logisticsNumber,
           'payment_method': paymentMethod,
+          if (discountPercentage != null) 'discount_percentage': discountPercentage,
+          if (discountAmount != null) 'discount_amount': discountAmount,
         }),
       ).timeout(const Duration(seconds: 35));
       return jsonDecode(res.body);

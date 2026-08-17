@@ -451,7 +451,7 @@ class _HotelMapCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '₹${hotel['price_per_night']}/night',
+                '₹${hotel['discounted_price'] ?? hotel['price_per_night']}/night',
                 style: const TextStyle(
                   fontSize: 12,
                   color: Color(0xFFC0392B),
@@ -553,13 +553,28 @@ class _HotelListCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          '₹/night',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFC0392B),
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              '₹${hotel['discounted_price'] ?? hotel['price_per_night']}/night',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFC0392B),
+                              ),
+                            ),
+                            if ((hotel['active_discount_percentage'] ?? 0) > 0) ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                '₹${hotel['original_price'] ?? hotel['price_per_night']}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFF888888),
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
