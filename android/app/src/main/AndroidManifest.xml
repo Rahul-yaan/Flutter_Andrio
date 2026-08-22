@@ -51,7 +51,7 @@
 
 
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.example.yaan">
+        package="com.yaan.truckparkingbooking">
 
         <uses-permission android:name="android.permission.INTERNET"/>
 

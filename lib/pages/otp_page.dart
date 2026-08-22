@@ -69,6 +69,15 @@ class _OtpPageState extends State<OtpPage> {
     }
   }
 
+  Future<void> _resendOtp() async {
+    _snack('Resending OTP...');
+    await _authService.sendOtp(
+      phoneNumber: widget.phoneNumber,
+      onCodeSent: () => _snack('OTP Resent!'),
+      onError: (err) => _snack(err),
+    );
+  }
+
   void _snack(String msg) =>
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
@@ -231,7 +240,7 @@ class _OtpPageState extends State<OtpPage> {
                   const SizedBox(height: 20),
                   Center(
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: _resendOtp,
                       child: RichText(
                         text: const TextSpan(
                           text: "Didn't receive OTP? ",
