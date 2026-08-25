@@ -32,6 +32,7 @@ class SearchResultsPage extends StatefulWidget {
 
 class _SearchResultsPageState extends State<SearchResultsPage> {
   bool _showMap = false;
+  bool _isReversed = false;
   List<Map<String, dynamic>> _hotels = [];
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
@@ -247,9 +248,10 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         children: [
           // Results count
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             color: Colors.white,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   '${_hotels.length} hotels found on route',
@@ -259,10 +261,40 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                     color: Color(0xFF444444),
                   ),
                 ),
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _isReversed = !_isReversed;
+                      _hotels = _hotels.reversed.toList();
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9EBEA),
+                      border: Border.all(color: const Color(0xFFC0392B)),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.swap_vert, size: 16, color: Color(0xFFC0392B)),
+                        const SizedBox(width: 4),
+                        Text(
+                          _isReversed ? 'Reverse Flow' : 'Sort',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFC0392B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-
           Expanded(child: _showMap ? _mapView() : _listView()),
         ],
       ),
