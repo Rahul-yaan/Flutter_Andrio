@@ -7,8 +7,16 @@ import 'pages/logo_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint("dotenv loading error: $e");
+  }
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    debugPrint("Firebase initialization error: $e");
+  }
   runApp(const MyApp());
 }
 
