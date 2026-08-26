@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:pinput/pinput.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
@@ -92,25 +92,32 @@ class _OtpPageState extends State<OtpPage> {
         fontWeight: FontWeight.w600,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
-        border: Border.all(color: const Color(0xFFDDDDDD)),
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFF9FAFB),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        borderRadius: BorderRadius.circular(14),
       ),
     );
 
     final focusedPinTheme = defaultPinTheme.copyDecorationWith(
       border: Border.all(color: const Color(0xFFC0392B), width: 2),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFFC0392B).withValues(alpha: 0.15),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
     );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
-          // Modern Header
+          // Sleek Gradient Header
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
+            padding: const EdgeInsets.fromLTRB(24, 64, 24, 36),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFFD32F2F), Color(0xFFC0392B)],
@@ -123,9 +130,9 @@ class _OtpPageState extends State<OtpPage> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFC0392B).withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
+                  color: const Color(0xFFC0392B).withValues(alpha: 0.25),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -134,24 +141,28 @@ class _OtpPageState extends State<OtpPage> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
+                    color: Colors.white.withValues(alpha: 0.18),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.message_outlined,
-                      color: Colors.white, size: 40),
+                  child: const Icon(
+                    Icons.mark_email_read_rounded,
+                    color: Colors.white,
+                    size: 38,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Verify Phone',
+                  'Verify Phone Number',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
-                  'OTP sent to ${widget.phoneNumber}',
+                  'We sent a 6-digit code to ${widget.phoneNumber}',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 14,
@@ -167,13 +178,13 @@ class _OtpPageState extends State<OtpPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   const Text(
-                    'Enter OTP',
+                    'Enter Security Code',
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF333333),
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1E293B),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -193,45 +204,89 @@ class _OtpPageState extends State<OtpPage> {
                     'Set Password',
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF333333),
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1E293B),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _passCtrl,
-                    obscureText: !_passVisible,
-                    decoration: InputDecoration(
-                      labelText: 'New Password',
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                        color: Color(0xFFC0392B),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _passVisible
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          color: const Color(0xFF888888),
+                  const SizedBox(height: 14),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                        onPressed: () =>
-                            setState(() => _passVisible = !_passVisible),
-                      ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _passCtrl,
+                          obscureText: !_passVisible,
+                          decoration: InputDecoration(
+                            labelText: 'Set Password',
+                            hintText: 'Enter at least 6 characters',
+                            prefixIcon: const Icon(
+                              Icons.lock_outline_rounded,
+                              color: Color(0xFFC0392B),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _passVisible
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: const Color(0xFF94A3B8),
+                              ),
+                              onPressed: () =>
+                                  setState(() => _passVisible = !_passVisible),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFC0392B), width: 1.5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _confirmCtrl,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            labelText: 'Confirm Password',
+                            hintText: 'Re-enter your password',
+                            prefixIcon: const Icon(
+                              Icons.lock_reset_rounded,
+                              color: Color(0xFFC0392B),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFC0392B), width: 1.5),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _confirmCtrl,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Confirm Password',
-                      prefixIcon: Icon(
-                        Icons.lock_outline,
-                        color: Color(0xFFC0392B),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 32),
                   CustomButton(
                     text: 'Verify & Continue',
                     onPressed: _verify,
@@ -245,13 +300,15 @@ class _OtpPageState extends State<OtpPage> {
                         text: const TextSpan(
                           text: "Didn't receive OTP? ",
                           style: TextStyle(
-                              color: Color(0xFF888888), fontSize: 14),
+                            color: Color(0xFF64748B),
+                            fontSize: 14,
+                          ),
                           children: [
                             TextSpan(
-                              text: 'Resend',
+                              text: 'Resend OTP',
                               style: TextStyle(
                                 color: Color(0xFFC0392B),
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],

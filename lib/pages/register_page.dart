@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../widgets/custom_button.dart';
@@ -44,7 +44,6 @@ class _RegisterPageState extends State<RegisterPage> {
     print(result);
     print("======================================");
 
-    // Extract error message if any
     String? extractErrorMessage(Map<String, dynamic> res) {
       if (res['errors'] != null) {
         final errors = res['errors'];
@@ -109,18 +108,30 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
+          // Sleek Curved Header
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(24, 60, 24, 28),
-            decoration: const BoxDecoration(
-              color: Color(0xFFC0392B),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(28),
-                bottomRight: Radius.circular(28),
+            padding: const EdgeInsets.fromLTRB(24, 68, 24, 36),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFD32F2F), Color(0xFFC0392B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFC0392B).withValues(alpha: 0.25),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,15 +140,16 @@ class _RegisterPageState extends State<RegisterPage> {
                   'Create Account',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
-                  'Fill in your details to get started',
+                  'Fill in your details to start booking your stay',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
+                    color: Colors.white.withValues(alpha: 0.88),
                     fontSize: 14,
                   ),
                 ),
@@ -150,41 +162,98 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Column(
                 children: [
                   const SizedBox(height: 8),
-                  TextField(
-                    controller: _nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Full Name',
-                      prefixIcon: Icon(
-                        Icons.person_outline,
-                        color: Color(0xFFC0392B),
-                      ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _emailCtrl,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email Address',
-                      prefixIcon: Icon(
-                        Icons.email_outlined,
-                        color: Color(0xFFC0392B),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _phoneCtrl,
-                    keyboardType: TextInputType.phone,
-                    maxLength: 10,
-                    decoration: const InputDecoration(
-                      labelText: 'Mobile Number',
-                      prefixIcon: Icon(
-                        Icons.phone_outlined,
-                        color: Color(0xFFC0392B),
-                      ),
-                      prefixText: '+91  ',
-                      counterText: '',
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _nameCtrl,
+                          decoration: InputDecoration(
+                            labelText: 'Full Name',
+                            hintText: 'John Doe',
+                            prefixIcon: const Icon(
+                              Icons.person_outline_rounded,
+                              color: Color(0xFFC0392B),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFC0392B), width: 1.5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        TextField(
+                          controller: _emailCtrl,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            labelText: 'Email Address',
+                            hintText: 'name@example.com',
+                            prefixIcon: const Icon(
+                              Icons.email_outlined,
+                              color: Color(0xFFC0392B),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFC0392B), width: 1.5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        TextField(
+                          controller: _phoneCtrl,
+                          keyboardType: TextInputType.phone,
+                          maxLength: 10,
+                          decoration: InputDecoration(
+                            labelText: 'Mobile Number',
+                            hintText: '9876543210',
+                            prefixIcon: const Icon(
+                              Icons.phone_outlined,
+                              color: Color(0xFFC0392B),
+                            ),
+                            prefixText: '+91  ',
+                            counterText: '',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFC0392B), width: 1.5),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -193,13 +262,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: _submit,
                     isLoading: _loading,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
                         'Already have an account?',
-                        style: TextStyle(color: Color(0xFF888888)),
+                        style: TextStyle(color: Color(0xFF64748B)),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pushReplacement(
@@ -210,7 +279,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           'Login',
                           style: TextStyle(
                             color: Color(0xFFC0392B),
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../widgets/custom_button.dart';
 
@@ -24,7 +24,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     final result = await ApiService.forgotPassword(email: email);
     setState(() => _loading = false);
 
-    // Daily limit reached — show blocking popup
     if (result['retry_tomorrow'] == true) {
       _showLimitDialog();
       return;
@@ -47,27 +46,27 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
-            Icon(Icons.block, color: Color(0xFFC0392B)),
-            SizedBox(width: 8),
+            Icon(Icons.block_rounded, color: Color(0xFFC0392B)),
+            SizedBox(width: 10),
             Text('Limit Reached'),
           ],
         ),
         content: const Text(
           'You have used all 3 password reset attempts for today.\n\nPlease try again tomorrow.',
-          style: TextStyle(color: Color(0xFF555555), height: 1.5),
+          style: TextStyle(color: Color(0xFF475569), height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // close dialog
-              Navigator.pop(context); // go back to login
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             child: const Text(
               'Go to Login',
-              style: TextStyle(color: Color(0xFFC0392B)),
+              style: TextStyle(color: Color(0xFFC0392B), fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -81,14 +80,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: const Color(0xFFC0392B),
         foregroundColor: Colors.white,
-        title: const Text('Forgot Password'),
+        title: const Text(
+          'Forgot Password',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         elevation: 0,
+        centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: _sent ? _successView() : _formView(),
       ),
@@ -96,60 +99,158 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   Widget _formView() => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(height: 16),
-      const Text(
-        'Enter the email address linked to your account.\nWe\'ll send a reset link valid for 3 minutes.',
-        style: TextStyle(color: Color(0xFF666666), fontSize: 14, height: 1.5),
-      ),
-      const SizedBox(height: 24),
-      TextField(
-        controller: _emailCtrl,
-        keyboardType: TextInputType.emailAddress,
-        decoration: const InputDecoration(
-          labelText: 'Email Address',
-          prefixIcon: Icon(Icons.email_outlined, color: Color(0xFFC0392B)),
-        ),
-      ),
-      const SizedBox(height: 24),
-      CustomButton(
-        text: 'Send Reset Link',
-        onPressed: _submit,
-        isLoading: _loading,
-      ),
-    ],
-  );
-
-  Widget _successView() => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(
-          Icons.mark_email_read_outlined,
-          size: 64,
-          color: Color(0xFF27AE60),
-        ),
-        const SizedBox(height: 20),
-        const Text(
-          'Check your email',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'A reset link was sent to ${_emailCtrl.text.trim()}.\nIt expires in 3 minutes.',
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Color(0xFF888888), height: 1.5),
-        ),
-        const SizedBox(height: 24),
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text(
-            'Back to Login',
-            style: TextStyle(color: Color(0xFFC0392B)),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFC0392B).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.lock_reset_rounded,
+                        color: Color(0xFFC0392B),
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Text(
+                        'Reset Security Password',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E293B),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Enter the registered email linked to your account. We will send a reset link valid for 3 minutes to request a New Password.',
+                  style: TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: _emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Registered Email Address',
+                    hintText: 'name@example.com',
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                      color: Color(0xFFC0392B),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFC0392B), width: 1.5),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(height: 28),
+          CustomButton(
+            text: 'Send Password Reset Link',
+            onPressed: _submit,
+            isLoading: _loading,
+          ),
+        ],
+      );
+
+  Widget _successView() => Container(
+        padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Color(0xFFECFDF5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.mark_email_read_rounded,
+                size: 56,
+                color: Color(0xFF10B981),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Check Your Email',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'A password reset link was sent to:\n${_emailCtrl.text.trim()}\n\nClick the link in your email to set a New Password. The link expires in 3 minutes.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 14,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 28),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Back to Login',
+                style: TextStyle(
+                  color: Color(0xFFC0392B),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
 }
