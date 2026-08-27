@@ -6,7 +6,7 @@ import 'edit_profile_page.dart';
 import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(Key? key);
+  const ProfilePage({super.key});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
