@@ -129,11 +129,16 @@ class ApiService {
     required double toLat,
     required double toLng,
     List<String>? amenities,
+    String? sort,
   }) async {
     try {
       final token = await getToken();
       String url = '$baseUrl/hotels/search?from_lat=$fromLat&from_lng=$fromLng&to_lat=$toLat&to_lng=$toLng';
       
+      if (sort != null && sort.isNotEmpty) {
+        url += '&sort=${Uri.encodeComponent(sort)}';
+      }
+
       if (amenities != null && amenities.isNotEmpty) {
         for (var amenity in amenities) {
           url += '&amenities[]=${Uri.encodeComponent(amenity)}';

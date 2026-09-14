@@ -33,6 +33,8 @@ class SearchResultsPage extends StatefulWidget {
 class _SearchResultsPageState extends State<SearchResultsPage> {
   bool _showMap = false;
   bool _isReversed = false;
+  String _currentSortMode = 'forward';
+  bool _isSorting = false;
   List<Map<String, dynamic>> _hotels = [];
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
@@ -45,6 +47,188 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     super.initState();
     _hotels = List.from(widget.hotels);
     _buildMarkers();
+  }
+
+  Future<void> _applySort(String mode) async {
+    setState(() {
+      _currentSortMode = mode;
+      _isReversed = (mode == 'reverse');
+      _isSorting = true;
+    });
+
+    try {
+      final res = await ApiService.searchHotels(
+        fromLat: widget.fromLat,
+        fromLng: widget.fromLng,
+        toLat: widget.toLat,
+        toLng: widget.toLng,
+        sort: mode,
+      );
+
+      if (res['hotels'] != null && res['hotels'] is List && (res['hotels'] as List).isNotEmpty) {
+        setState(() {
+          _hotels = List<Map<String, dynamic>>.from(res['hotels']);
+        });
+      } else {
+        _sortHotelsLocally(mode);
+      }
+    } catch (e) {
+      _sortHotelsLocally(mode);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSorting = false;
+        });
+        _buildMarkers();
+      }
+    }
+  }
+
+  void _sortHotelsLocally(String mode) {
+    List<Map<String, dynamic>> sorted = List.from(_hotels);
+    if (mode == 'reverse') {
+      sorted = sorted.reversed.toList();
+    } else if (mode == 'price_low') {
+      sorted.sort((a, b) {
+        double p1 = (a['discounted_price'] ?? a['price_per_night'] ?? 0).toDouble();
+        double p2 = (b['discounted_price'] ?? b['price_per_night'] ?? 0).toDouble();
+        return p1.compareTo(p2);
+      });
+    } else if (mode == 'price_high') {
+      sorted.sort((a, b) {
+        double p1 = (a['discounted_price'] ?? a['price_per_night'] ?? 0).toDouble();
+        double p2 = (b['discounted_price'] ?? b['price_per_night'] ?? 0).toDouble();
+        return p2.compareTo(p1);
+      });
+    } else if (mode == 'rating') {
+      sorted.sort((a, b) {
+        double r1 = double.tryParse((a['rating'] ?? 0).toString()) ?? 0;
+        double r2 = double.tryParse((b['rating'] ?? 0).toString()) ?? 0;
+        return r2.compareTo(r1);
+      });
+    } else {
+      if (_isReversed) {
+        sorted = sorted.reversed.toList();
+      }
+    }
+    setState(() {
+      _hotels = sorted;
+    });
+  }
+
+  String _getSortButtonLabel() {
+    switch (_currentSortMode) {
+      case 'reverse':
+        return 'Reverse Route';
+      case 'price_low':
+        return 'Price ↑';
+      case 'price_high':
+        return 'Price ↓';
+      case 'rating':
+        return 'Rating';
+      case 'forward':
+      default:
+        return 'Sort';
+    }
+  }
+
+  void _showSortBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Sort Hotels',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.grey),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(),
+              _buildSortOptionTile(
+                icon: Icons.alt_route,
+                title: 'Start to Destination (Route Order)',
+                subtitle: 'Hotels sorted from ${widget.fromCity} to ${widget.toCity}',
+                mode: 'forward',
+              ),
+              _buildSortOptionTile(
+                icon: Icons.swap_calls,
+                title: 'Destination to Start (Reverse Route)',
+                subtitle: 'Hotels sorted from ${widget.toCity} to ${widget.fromCity}',
+                mode: 'reverse',
+              ),
+              _buildSortOptionTile(
+                icon: Icons.arrow_downward,
+                title: 'Price: Low to High',
+                subtitle: 'Budget friendly options first',
+                mode: 'price_low',
+              ),
+              _buildSortOptionTile(
+                icon: Icons.arrow_upward,
+                title: 'Price: High to Low',
+                subtitle: 'Premium hotels first',
+                mode: 'price_high',
+              ),
+              _buildSortOptionTile(
+                icon: Icons.star_rate_rounded,
+                title: 'Rating: High to Low',
+                subtitle: 'Best customer rated hotels',
+                mode: 'rating',
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSortOptionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String mode,
+  }) {
+    final isSelected = (_currentSortMode == mode);
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFF9EBEA) : const Color(0xFFF5F5F5),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: isSelected ? const Color(0xFFC0392B) : Colors.grey[700], size: 20),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? const Color(0xFFC0392B) : const Color(0xFF222222),
+          fontSize: 14,
+        ),
+      ),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      trailing: isSelected
+          ? const Icon(Icons.check_circle, color: Color(0xFFC0392B), size: 22)
+          : null,
+      onTap: () {
+        Navigator.pop(context);
+        _applySort(mode);
+      },
+    );
   }
 
   Future<void> _buildMarkers() async {
@@ -81,7 +265,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
           ),
           infoWindow: InfoWindow(
             title: hotel['name'],
-            snippet: '₹${hotel['price_per_night']}/night',
+            snippet: '₹${(hotel['total_payable'] ?? hotel['display_price'] ?? hotel['discounted_price'] ?? hotel['price_per_night'])}/night',
           ),
           onTap: () => _goToHotel(hotel),
         ),
@@ -226,7 +410,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         backgroundColor: const Color(0xFFC0392B),
         foregroundColor: Colors.white,
         title: Text(
-          '${widget.fromCity} → ${widget.toCity}',
+          '${widget.fromCity} ➔ ${widget.toCity}',
           style: const TextStyle(fontSize: 15),
         ),
         actions: [
@@ -246,7 +430,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
       ),
       body: Column(
         children: [
-          // Results count
+          // Results count & Sort Button
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             color: Colors.white,
@@ -262,14 +446,9 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                   ),
                 ),
                 InkWell(
-                  onTap: () {
-                    setState(() {
-                      _isReversed = !_isReversed;
-                      _hotels = _hotels.reversed.toList();
-                    });
-                  },
+                  onTap: _showSortBottomSheet,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF9EBEA),
                       border: Border.all(color: const Color(0xFFC0392B)),
@@ -278,16 +457,28 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.swap_vert, size: 16, color: Color(0xFFC0392B)),
+                        if (_isSorting)
+                          const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFFC0392B),
+                            ),
+                          )
+                        else
+                          const Icon(Icons.swap_vert, size: 16, color: Color(0xFFC0392B)),
                         const SizedBox(width: 4),
                         Text(
-                          _isReversed ? 'Reverse Flow' : 'Sort',
+                          _getSortButtonLabel(),
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFFC0392B),
                           ),
                         ),
+                        const SizedBox(width: 2),
+                        const Icon(Icons.arrow_drop_down, size: 16, color: Color(0xFFC0392B)),
                       ],
                     ),
                   ),
@@ -329,7 +520,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                 boxShadow: const [
                   BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2),
                 ],
-                border: Border.all(color: const Color(0xFFC0392B).withOpacity(0.3), width: 1),
+                border: Border.all(color: const Color(0xFFC0392B).withValues(alpha: 0.3), width: 1),
               ),
               child: Row(
                 children: [
@@ -405,7 +596,6 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
       ),
     );
   }
-
 }
 
 class _HotelMapCard extends StatelessWidget {
@@ -483,7 +673,7 @@ class _HotelMapCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '₹${hotel['discounted_price'] ?? hotel['price_per_night']}/night',
+                '₹${(hotel['total_payable'] ?? hotel['display_price'] ?? hotel['discounted_price'] ?? hotel['price_per_night'])}/night',
                 style: const TextStyle(
                   fontSize: 12,
                   color: Color(0xFFC0392B),
@@ -588,7 +778,7 @@ class _HotelListCard extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              '₹${hotel['discounted_price'] ?? hotel['price_per_night']}/night',
+                              '₹${(hotel['total_payable'] ?? hotel['display_price'] ?? hotel['discounted_price'] ?? hotel['price_per_night'])}/night',
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,

@@ -10,6 +10,23 @@ class MyBookingsPage extends StatefulWidget {
 }
 
 class _MyBookingsPageState extends State<MyBookingsPage> {
+
+  String _getBookingTotalDisplay(Map<String, dynamic> b) {
+    if (b['total_payable'] != null && double.tryParse(b['total_payable'].toString()) != null) {
+      double tp = double.parse(b['total_payable'].toString());
+      if (tp > 0) return tp.toStringAsFixed(2);
+    }
+    if (b['total_amount'] != null && double.tryParse(b['total_amount'].toString()) != null) {
+      double ta = double.parse(b['total_amount'].toString());
+      return (ta * 1.18).toStringAsFixed(2);
+    }
+    if (b['price_per_night'] != null && double.tryParse(b['price_per_night'].toString()) != null) {
+      double ppn = double.parse(b['price_per_night'].toString());
+      return (ppn * 1.18).toStringAsFixed(2);
+    }
+    return '0.00';
+  }
+
   List<dynamic> _bookings = [];
   bool _loading = true;
 
@@ -240,7 +257,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                   MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Total: ₹${b['total_payable'] ?? b['total_amount']}',
+                                  'Total: ₹${_getBookingTotalDisplay(b)}',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
