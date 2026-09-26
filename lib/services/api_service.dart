@@ -32,7 +32,7 @@ class ApiService {
               'role': 'user',
             }),
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 60));
 
       return jsonDecode(res.body);
     } catch (e) {
@@ -59,7 +59,7 @@ class ApiService {
               'password_confirmation': passwordConfirmation,
             }),
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 35));
       return jsonDecode(res.body);
     } catch (e) {
       print('VERIFY OTP ERROR: $e');
@@ -82,7 +82,7 @@ class ApiService {
               'role': 'user',
             }),
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 35));
       return jsonDecode(res.body);
     } catch (e) {
       print('LOGIN ERROR: $e');
@@ -115,7 +115,7 @@ class ApiService {
             headers: _headers,
             body: jsonEncode({'email': email}),
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 35));
       return jsonDecode(res.body);
     } catch (e) {
       print('FORGOT PASSWORD ERROR: $e');
@@ -129,11 +129,16 @@ class ApiService {
     required double toLat,
     required double toLng,
     List<String>? amenities,
+    String? sort,
   }) async {
     try {
       final token = await getToken();
       String url = '$baseUrl/hotels/search?from_lat=$fromLat&from_lng=$fromLng&to_lat=$toLat&to_lng=$toLng';
       
+      if (sort != null && sort.isNotEmpty) {
+        url += '&sort=${Uri.encodeComponent(sort)}';
+      }
+
       if (amenities != null && amenities.isNotEmpty) {
         for (var amenity in amenities) {
           url += '&amenities[]=${Uri.encodeComponent(amenity)}';
@@ -145,7 +150,7 @@ class ApiService {
             Uri.parse(url),
             headers: {..._headers, 'Authorization': 'Bearer $token'},
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 35));
       return jsonDecode(res.body);
     } catch (e) {
       print('SEARCH ERROR: $e');
@@ -186,7 +191,7 @@ class ApiService {
             Uri.parse('$baseUrl/hotels/$hotelId'),
             headers: {..._headers, 'Authorization': 'Bearer $token'},
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 35));
       return jsonDecode(res.body);
     } catch (e) {
       print('GET HOTEL ERROR: $e');
@@ -202,7 +207,7 @@ class ApiService {
             Uri.parse('$baseUrl/hotels/$hotelId/reviews'),
             headers: {..._headers, 'Authorization': 'Bearer $token'},
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 35));
           
       final decoded = jsonDecode(res.body);
       if (decoded is List) {
@@ -224,7 +229,7 @@ class ApiService {
           'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&types=(cities)&key=$apiKey';
       final res = await http
           .get(Uri.parse(url))
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 35));
       final data = jsonDecode(res.body);
 
       if (data['predictions'] == null) return [];
@@ -236,7 +241,7 @@ class ApiService {
             'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$apiKey';
         final detailRes = await http
             .get(Uri.parse(detailUrl))
-            .timeout(const Duration(seconds: 10));
+            .timeout(const Duration(seconds: 35));
         final detailData = jsonDecode(detailRes.body);
 
         if (detailData['result'] != null) {
@@ -271,7 +276,7 @@ class ApiService {
           'rating': rating,
           'comment': comment,
         }),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 35));
       return jsonDecode(res.body);
     } catch (e) {
       print('SUBMIT REVIEW ERROR: $e');
@@ -287,6 +292,8 @@ class ApiService {
     required String logisticsName,
     required String logisticsNumber,
     required String paymentMethod,
+    double? discountPercentage,
+    double? discountAmount,
   }) async {
     try {
       final token = await getToken();
@@ -301,8 +308,10 @@ class ApiService {
           'logistics_name': logisticsName,
           'logistics_number': logisticsNumber,
           'payment_method': paymentMethod,
+          if (discountPercentage != null) 'discount_percentage': discountPercentage,
+          if (discountAmount != null) 'discount_amount': discountAmount,
         }),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 35));
       return jsonDecode(res.body);
   } catch (e) {
     print('BOOKING ERROR: $e');
@@ -316,7 +325,7 @@ static Future<Map<String, dynamic>> getMyBookings() async {
     final res = await http.get(
       Uri.parse('$baseUrl/bookings/my'),
       headers: {..._headers, 'Authorization': 'Bearer $token'},
-    ).timeout(const Duration(seconds: 10));
+    ).timeout(const Duration(seconds: 35));
     return jsonDecode(res.body);
   } catch (e) {
     print('MY BOOKINGS ERROR: $e');
@@ -332,7 +341,7 @@ static Future<Map<String, dynamic>> cancelBooking({
     final res = await http.post(
       Uri.parse('$baseUrl/bookings/$bookingId/cancel'),
       headers: {..._headers, 'Authorization': 'Bearer $token'},
-    ).timeout(const Duration(seconds: 10));
+    ).timeout(const Duration(seconds: 35));
     return jsonDecode(res.body);
   } catch (e) {
     print('CANCEL BOOKING ERROR: $e');
@@ -346,7 +355,7 @@ static Future<Map<String, dynamic>> getProfile() async {
     final res = await http.get(
       Uri.parse('$baseUrl/me'),
       headers: {..._headers, 'Authorization': 'Bearer $token'},
-    ).timeout(const Duration(seconds: 10));
+    ).timeout(const Duration(seconds: 35));
     return jsonDecode(res.body);
   } catch (e) {
     print('GET PROFILE ERROR: $e');
@@ -373,7 +382,7 @@ static Future<Map<String, dynamic>> updateProfile({
       request.files.add(await http.MultipartFile.fromPath('avatar', avatarPath));
     }
 
-    var streamedResponse = await request.send().timeout(const Duration(seconds: 15));
+    var streamedResponse = await request.send().timeout(const Duration(seconds: 35));
     var response = await http.Response.fromStream(streamedResponse);
     return jsonDecode(response.body);
   } catch (e) {
@@ -381,4 +390,31 @@ static Future<Map<String, dynamic>> updateProfile({
     return {'error': 'Connection failed: $e'};
   }
 }
+
+static Future<Map<String, dynamic>> verifyPayment({
+  required int bookingId,
+  required String razorpayPaymentId,
+  required String razorpayOrderId,
+  required String razorpaySignature,
+  String? transactionId,
+}) async {
+  try {
+    final token = await getToken();
+    final res = await http.post(
+      Uri.parse('$baseUrl/bookings/$bookingId/verify-payment'),
+      headers: {..._headers, 'Authorization': 'Bearer $token'},
+      body: jsonEncode({
+        'razorpay_payment_id': razorpayPaymentId,
+        'razorpay_order_id': razorpayOrderId,
+        'razorpay_signature': razorpaySignature,
+        'transaction_id': transactionId ?? razorpayPaymentId,
+      }),
+    ).timeout(const Duration(seconds: 35));
+    return jsonDecode(res.body);
+  } catch (e) {
+    print('VERIFY PAYMENT ERROR: $e');
+    return {'error': 'Connection failed: $e'};
+  }
+}
+
 }

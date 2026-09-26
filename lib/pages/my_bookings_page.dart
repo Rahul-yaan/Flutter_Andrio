@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/api_service.dart';
+import '../utils/image_utils.dart';
 
 class MyBookingsPage extends StatefulWidget {
   const MyBookingsPage({super.key});
@@ -10,6 +10,23 @@ class MyBookingsPage extends StatefulWidget {
 }
 
 class _MyBookingsPageState extends State<MyBookingsPage> {
+
+  String _getBookingTotalDisplay(Map<String, dynamic> b) {
+    if (b['total_payable'] != null && double.tryParse(b['total_payable'].toString()) != null) {
+      double tp = double.parse(b['total_payable'].toString());
+      if (tp > 0) return tp.toStringAsFixed(2);
+    }
+    if (b['total_amount'] != null && double.tryParse(b['total_amount'].toString()) != null) {
+      double ta = double.parse(b['total_amount'].toString());
+      return (ta * 1.18).toStringAsFixed(2);
+    }
+    if (b['price_per_night'] != null && double.tryParse(b['price_per_night'].toString()) != null) {
+      double ppn = double.parse(b['price_per_night'].toString());
+      return (ppn * 1.18).toStringAsFixed(2);
+    }
+    return '0.00';
+  }
+
   List<dynamic> _bookings = [];
   bool _loading = true;
 
@@ -114,6 +131,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                     final b = _bookings[i];
                     final hotel = b['hotel'];
                     final status = b['status'] ?? 'pending';
+                    final txnId = b['transaction_id'] ?? b['razorpay_payment_id'];
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
@@ -130,22 +148,27 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                           children: [
                             Row(
                               children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF5E8E8),
-                                    borderRadius: BorderRadius.circular(10),
-                                    image: hotel != null && hotel['primary_image'] != null
-                                        ? DecorationImage(
-                                            image: NetworkImage('${dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? ''}/storage/${hotel['primary_image']['image_path']}'),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : null,
-                                  ),
-                                  child: hotel == null || hotel['primary_image'] == null
-                                      ? const Icon(Icons.hotel, color: Color(0xFFC0392B))
-                                      : null,
+                                Builder(
+                                  builder: (context) {
+                                    String? imageUrl = ImageUtils.getHotelImageUrl(hotel);
+                                    return Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF5E8E8),
+                                        borderRadius: BorderRadius.circular(10),
+                                        image: imageUrl != null
+                                            ? DecorationImage(
+                                                image: NetworkImage(imageUrl),
+                                                fit: BoxFit.cover,
+                                              )
+                                            : null,
+                                      ),
+                                      child: imageUrl == null
+                                          ? const Icon(Icons.hotel, color: Color(0xFFC0392B))
+                                          : null,
+                                    );
+                                  },
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -218,13 +241,23 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                 ),
                               ],
                             ),
+                            if (txnId != null && txnId.toString().isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                'Txn ID: $txnId',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFF777777),
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 8),
                             Row(
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Total: ₹${b['total_payable'] ?? b['total_amount']}',
+                                  'Total: ₹${_getBookingTotalDisplay(b)}',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,

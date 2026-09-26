@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../services/api_service.dart';
 import 'booking_page.dart';
 import 'login_page.dart';
 import 'hotel_map_screen.dart';
+import '../utils/image_utils.dart';
 class HotelDetailPage extends StatefulWidget {
   final int hotelId;
   const HotelDetailPage({super.key, required this.hotelId});
@@ -203,30 +200,42 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       backgroundColor: const Color(0xFFF7F7F7),
       body: CustomScrollView(
         slivers: [
-          // Header image
           SliverAppBar(
             expandedHeight: 220,
             pinned: true,
             backgroundColor: const Color(0xFFC0392B),
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
-              background: _hotel!['primary_image'] != null
-                  ? Image.network(
-                      '${dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? ''}/storage/${_hotel!['primary_image']['image_path']}',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: const Color(0xFFF5E8E8),
-                        child: const Center(
-                          child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
-                        ),
-                      ),
-                    )
-                  : Container(
-                      color: const Color(0xFFF5E8E8),
-                      child: const Center(
-                        child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
-                      ),
-                    ),
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Builder(
+                    builder: (context) {
+                      String? imageUrl = ImageUtils.getHotelImageUrl(_hotel);
+
+                      if (imageUrl != null) {
+                        return Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: const Color(0xFFF5E8E8),
+                            child: const Center(
+                              child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
+                            ),
+                          ),
+                        );
+                      } else {
+                        return Container(
+                          color: const Color(0xFFF5E8E8),
+                          child: const Center(
+                            child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -340,7 +349,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           ),
                           child: Column(
                             children: [
-                              const Text('Available Rooms',
+                              const Text('Available Slots',
                                   style: TextStyle(
                                       fontSize: 12,
                                       color: Color(0xFF888888))),
@@ -437,16 +446,12 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                                     color: const Color(0xFFF5E8E8),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: Icon(
-                                    _getAmenityIcon(amenityName),
-                                    size: 16,
-                                    color: const Color(0xFFC0392B),
-                                  ),
+                                  child: const Icon(Icons.check, color: Color(0xFFC0392B), size: 16),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    amenityName,
+                                    amenityName.trim(),
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: Color(0xFF1A1A1A),
@@ -557,8 +562,8 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             ),
             child: Text(
               _hotel!['available_rooms'] == 0
-                  ? 'No Rooms Available'
-                  : 'Book Now — ₹${_hotel!['price_per_night']}/night',
+                  ? 'No Slots Available'
+                  : 'Book Now — ₹${_hotel!['total_payable'] ?? _hotel!['display_price'] ?? _hotel!['price_per_night']}/night',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
