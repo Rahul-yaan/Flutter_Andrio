@@ -408,10 +408,18 @@ class _HotelMapCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFFF5E8E8),
                   borderRadius: BorderRadius.circular(10),
+                  image: hotel['primary_image'] != null
+                      ? DecorationImage(
+                          image: NetworkImage('${dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? ''}/storage/${hotel['primary_image']['image_path']}'),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: const Center(
-                  child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 32),
-                ),
+                child: hotel['primary_image'] == null 
+                    ? const Center(
+                        child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 32),
+                      )
+                    : null,
               ),
               const SizedBox(height: 8),
               Text(
@@ -462,16 +470,24 @@ class _HotelListCard extends StatelessWidget {
             Container(
               width: 100,
               height: 100,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF5E8E8),
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5E8E8),
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(14),
                   bottomLeft: Radius.circular(14),
                 ),
+                image: hotel['primary_image'] != null
+                    ? DecorationImage(
+                        image: NetworkImage('${dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? ''}/storage/${hotel['primary_image']['image_path']}'),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
-              child: const Center(
-                child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 36),
-              ),
+              child: hotel['primary_image'] == null
+                  ? const Center(
+                      child: Icon(Icons.hotel, color: Color(0xFFC0392B), size: 36),
+                    )
+                  : null,
             ),
             Expanded(
               child: Padding(

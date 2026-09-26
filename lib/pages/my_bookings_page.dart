@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/api_service.dart';
 
 class MyBookingsPage extends StatefulWidget {
@@ -135,9 +136,16 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF5E8E8),
                                     borderRadius: BorderRadius.circular(10),
+                                    image: hotel != null && hotel['primary_image'] != null
+                                        ? DecorationImage(
+                                            image: NetworkImage('${dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? ''}/storage/${hotel['primary_image']['image_path']}'),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
                                   ),
-                                  child: const Icon(Icons.hotel,
-                                      color: Color(0xFFC0392B)),
+                                  child: hotel == null || hotel['primary_image'] == null
+                                      ? const Icon(Icons.hotel, color: Color(0xFFC0392B))
+                                      : null,
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(

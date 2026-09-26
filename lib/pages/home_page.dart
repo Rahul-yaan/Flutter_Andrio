@@ -5,6 +5,7 @@ import 'search_results_page.dart';
 import 'login_page.dart';
 import 'my_bookings_page.dart';
 import 'profile_page.dart';
+import 'qr_scanner_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -123,6 +124,32 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.12),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          tooltip: 'Scan Hotel QR Code',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const QrScannerPage(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.qr_code_scanner, color: Color(0xFFC0392B), size: 22),
                         ),
                       ),
                       Container(
@@ -273,6 +300,38 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const QrScannerPage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 20),
+                      label: const Text(
+                        'Scan QR to Spot Book Hotel',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.15),
+                        side: const BorderSide(color: Colors.white, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+
                 ],
               ),
             ),
@@ -309,6 +368,12 @@ class _HomePageState extends State<HomePage> {
                       icon: Icons.hotel_rounded,
                       title: 'Book & Stay',
                       desc: 'Pick your hotel and book instantly',
+                    ),
+                    const SizedBox(height: 12),
+                    _HowItWorksCard(
+                      icon: Icons.qr_code_scanner_rounded,
+                      title: 'Spot Booking via QR',
+                      desc: 'Scan the standee at hotel reception to book instantly',
                     ),
                   ],
                 ),

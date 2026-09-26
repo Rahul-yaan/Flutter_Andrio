@@ -182,7 +182,7 @@ class _BookingPageState extends State<BookingPage> {
                 borderRadius: BorderRadius.circular(12),
                 image: widget.hotel['primary_image'] != null
                     ? DecorationImage(
-                        image: NetworkImage('http://127.0.0.1:8000/storage/' + widget.hotel['primary_image']['image_path']),
+                        image: NetworkImage('${dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? ''}/storage/${widget.hotel['primary_image']['image_path']}'),
                         fit: BoxFit.cover,
                       )
                     : null,

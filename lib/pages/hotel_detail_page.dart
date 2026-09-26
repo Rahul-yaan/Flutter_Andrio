@@ -210,12 +210,23 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             backgroundColor: const Color(0xFFC0392B),
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                color: const Color(0xFFF5E8E8),
-                child: const Center(
-                  child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
-                ),
-              ),
+              background: _hotel!['primary_image'] != null
+                  ? Image.network(
+                      '${dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? ''}/storage/${_hotel!['primary_image']['image_path']}',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: const Color(0xFFF5E8E8),
+                        child: const Center(
+                          child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      color: const Color(0xFFF5E8E8),
+                      child: const Center(
+                        child: Icon(Icons.hotel, size: 80, color: Color(0xFFC0392B)),
+                      ),
+                    ),
             ),
           ),
 
@@ -386,10 +397,12 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   Builder(
                     builder: (context) {
                       List<dynamic> amenitiesList = [];
-                      if (_hotel!['amenities'] != null && _hotel!['amenities'].toString().isNotEmpty) {
-                        amenitiesList = _hotel!['amenities'] is List 
-                            ? _hotel!['amenities'] as List 
-                            : _hotel!['amenities'].toString().split(',');
+                      if (_hotel!['amenities'] != null) {
+                        if (_hotel!['amenities'] is List) {
+                          amenitiesList = _hotel!['amenities'] as List;
+                        } else if (_hotel!['amenities'].toString().isNotEmpty) {
+                          amenitiesList = _hotel!['amenities'].toString().split(',');
+                        }
                       }
                       
                       if (amenitiesList.isEmpty) {
@@ -411,27 +424,34 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                             amenityName = amenity['name'].toString();
                           } else {
                             amenityName = amenity.toString();
+                            amenityName = amenity.toString().trim();
                           }
-                          // Clean up string like "['wifi']"
-                          amenityName = amenityName.replaceAll('[', '').replaceAll(']', '').replaceAll('\'', '').replaceAll('"', '').trim();
-                          if (amenityName.isEmpty) return const SizedBox.shrink();
-
-                          return SizedBox(
-                            width: (MediaQuery.of(context).size.width - 44) / 2, // 2 columns minus padding
+                          return Container(
+                            width: (MediaQuery.of(context).size.width - 56) / 2, // 2 columns
+                            margin: const EdgeInsets.only(bottom: 12),
                             child: Row(
-                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.check_box, size: 18, color: Colors.black87),
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF5E8E8),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Icon(
+                                    _getAmenityIcon(amenityName),
+                                    size: 16,
+                                    color: const Color(0xFFC0392B),
+                                  ),
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     amenityName,
                                     style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.black87,
+                                      fontSize: 14,
+                                      color: Color(0xFF1A1A1A),
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
