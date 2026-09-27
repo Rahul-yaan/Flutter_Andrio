@@ -391,7 +391,32 @@ static Future<Map<String, dynamic>> updateProfile({
   }
 }
 
-static Future<Map<String, dynamic>> verifyPayment({
+  static Future<Map<String, dynamic>> scanHotelQr({required String code}) async {
+    try {
+      final token = await getToken();
+      final res = await http
+          .post(
+            Uri.parse('$baseUrl/hotels/scan-qr'),
+            headers: {
+              ..._headers,
+              if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode({'code': code}),
+          )
+          .timeout(const Duration(seconds: 35));
+
+      return jsonDecode(res.body);
+    } catch (e) {
+      print('SCAN HOTEL QR ERROR: $e');
+      return {
+        'status': 'error',
+        'can_book': false,
+        'message': 'Connection error: $e',
+      };
+    }
+  }
+
+  static Future<Map<String, dynamic>> verifyPayment({
   required int bookingId,
   required String razorpayPaymentId,
   required String razorpayOrderId,

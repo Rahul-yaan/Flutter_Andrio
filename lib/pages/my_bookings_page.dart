@@ -1,3 +1,4 @@
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../utils/image_utils.dart';
@@ -10,6 +11,89 @@ class MyBookingsPage extends StatefulWidget {
 }
 
 class _MyBookingsPageState extends State<MyBookingsPage> {
+
+  void _showCheckInQrDialog(Map<String, dynamic> b) {
+    final int bookingId = b['id'] is int ? b['id'] : (int.tryParse(b['id'].toString()) ?? 0);
+    final String yaanId = b['hotel']?['yaan_id'] ?? 'YAAN';
+    final String hotelName = b['hotel']?['name'] ?? 'Hotel';
+    final String truckNo = b['truck_no'] ?? '';
+    final String payload = 'YAAN-BOOKING-$bookingId';
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Check-In Pass',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Show this QR code at hotel reception to confirm check-in',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: QrImageView(
+                  data: payload,
+                  version: QrVersions.auto,
+                  size: 170,
+                  backgroundColor: Colors.white,
+                  eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF1E293B)),
+                  dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: Color(0xFF1E293B)),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Booking #$bookingId', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    if (truckNo.isNotEmpty)
+                      Text(truckNo, style: const TextStyle(color: Color(0xFFC0392B), fontWeight: FontWeight.bold, fontSize: 13)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "$hotelName ($yaanId)",
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   String _getBookingTotalDisplay(Map<String, dynamic> b) {
     if (b['total_payable'] != null && double.tryParse(b['total_payable'].toString()) != null) {
@@ -264,16 +348,31 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                     color: Color(0xFFC0392B),
                                   ),
                                 ),
-                                if (status == 'pending' ||
-                                    status == 'confirmed')
-                                  TextButton(
-                                    onPressed: () =>
-                                        _cancelBooking(b['id']),
-                                    child: const Text(
-                                      'Cancel',
-                                      style: TextStyle(
-                                          color: Color(0xFFE74C3C)),
-                                    ),
+                                if (status == 'pending' || status == 'confirmed')
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      OutlinedButton.icon(
+                                        onPressed: () => _showCheckInQrDialog(b),
+                                        icon: const Icon(Icons.qr_code_rounded, size: 14, color: Color(0xFF27AE60)),
+                                        label: const Text('Show QR Pass', style: TextStyle(color: Color(0xFF27AE60), fontWeight: FontWeight.bold, fontSize: 11)),
+                                        style: OutlinedButton.styleFrom(
+                                          side: const BorderSide(color: Color(0xFF27AE60)),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          visualDensity: VisualDensity.compact,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      TextButton(
+                                        onPressed: () => _cancelBooking(b['id']),
+                                        style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                                        child: const Text(
+                                          'Cancel',
+                                          style: TextStyle(color: Color(0xFFE74C3C), fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                               ],
                             ),

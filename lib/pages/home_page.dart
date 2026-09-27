@@ -1,3 +1,4 @@
+import 'qr_scanner_page.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
@@ -152,6 +153,23 @@ class _HomePageState extends State<HomePage> {
                           icon: const Icon(Icons.qr_code_scanner, color: Color(0xFFC0392B), size: 22),
                         ),
                       ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          tooltip: 'Scan Hotel QR',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const QrScannerPage()),
+                            );
+                          },
+                          icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
@@ -342,7 +360,74 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                    const Text(
+                    GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const QrScannerPage()),
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 24),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2C3E50), Color(0xFF1A252F)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.12),
+                            blurRadius: 12,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFC0392B),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 26),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Spot Booking with QR',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(width: 6),
+                                    Badge(label: Text('SPOT', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold))),
+                                  ],
+                                ),
+                                SizedBox(height: 3),
+                                Text(
+                                  'Scan hotel reception QR code for instant room booking',
+                                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Text(
                       'How it works',
                       style: TextStyle(
                         fontSize: 18,
@@ -404,6 +489,11 @@ class _HomePageState extends State<HomePage> {
           currentIndex: _currentIndex,
           onTap: (i) async {
             if (i == 1) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const QrScannerPage()),
+              );
+            } else if (i == 2) {
               final token = await ApiService.getToken();
               if (token == null) {
                 if (mounted) {
@@ -420,7 +510,7 @@ class _HomePageState extends State<HomePage> {
                   );
                 }
               }
-            } else if (i == 2) {
+            } else if (i == 3) {
               final token = await ApiService.getToken();
               if (token == null) {
                 if (mounted) {
@@ -448,6 +538,13 @@ class _HomePageState extends State<HomePage> {
                 child: Icon(Icons.home_rounded),
               ),
               label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.only(bottom: 4),
+                child: Icon(Icons.qr_code_scanner_rounded),
+              ),
+              label: 'Scan QR',
             ),
             BottomNavigationBarItem(
               icon: Padding(
