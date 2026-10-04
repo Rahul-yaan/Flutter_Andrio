@@ -158,30 +158,6 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> scanHotelQr(String qrData) async {
-    try {
-      final token = await getToken();
-      final headers = {..._headers};
-      if (token != null && token.isNotEmpty) {
-        headers['Authorization'] = 'Bearer $token';
-      }
-      final res = await http
-          .post(
-            Uri.parse('$baseUrl/hotels/scan-qr'),
-            headers: headers,
-            body: jsonEncode({'qr_data': qrData}),
-          )
-          .timeout(const Duration(seconds: 15));
-      final decoded = jsonDecode(res.body);
-      if (decoded is Map<String, dynamic>) {
-        return decoded;
-      }
-      return {'error': 'Invalid response from server'};
-    } catch (e) {
-      print('SCAN QR ERROR: $e');
-      return {'error': 'Failed to verify QR code: $e'};
-    }
-  }
 
   static Future<Map<String, dynamic>> getHotelDetail({required int hotelId}) async {
     try {
@@ -401,7 +377,10 @@ static Future<Map<String, dynamic>> updateProfile({
               ..._headers,
               if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
             },
-            body: jsonEncode({'code': code}),
+            body: jsonEncode({
+              'code': code,
+              'qr_data': code,
+            }),
           )
           .timeout(const Duration(seconds: 35));
 
