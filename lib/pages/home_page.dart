@@ -1,12 +1,14 @@
-import 'qr_scanner_page.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/notification_service.dart';
+import '../models/notification_item.dart';
 import 'search_results_page.dart';
 import 'login_page.dart';
 import 'my_bookings_page.dart';
 import 'profile_page.dart';
 import 'qr_scanner_page.dart';
+import 'notifications_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,6 +24,25 @@ class _HomePageState extends State<HomePage> {
   double? _fromLat, _fromLng, _toLat, _toLng;
   bool _loading = false;
   int _currentIndex = 0;
+  int _unreadNotificationsCount = 0;
+  NotificationItem? _bannerNotification;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationsData();
+  }
+
+  Future<void> _loadNotificationsData() async {
+    final count = await NotificationService.getUnreadCount();
+    final banner = await NotificationService.getLatestBannerNotification();
+    if (mounted) {
+      setState(() {
+        _unreadNotificationsCount = count;
+        _bannerNotification = banner;
+      });
+    }
+  }
 
   Future<void> _search() async {
     if (_fromCtrl.text.trim().isEmpty || _toCtrl.text.trim().isEmpty) {
@@ -127,49 +148,65 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.12),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
+                      // Notification Icon Button for Admin Offers & News
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
                             ),
-                          ],
-                        ),
-                        child: IconButton(
-                          tooltip: 'Scan Hotel QR Code',
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const QrScannerPage(),
+                            child: IconButton(
+                              tooltip: 'Notifications & Offers',
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const NotificationsPage(),
+                                  ),
+                                );
+                                _loadNotificationsData();
+                              },
+                              icon: const Icon(
+                                Icons.notifications_none_rounded,
+                                color: Colors.white,
+                                size: 22,
                               ),
-                            );
-                          },
-                          icon: const Icon(Icons.qr_code_scanner, color: Color(0xFFC0392B), size: 22),
-                        ),
+                            ),
+                          ),
+                          if (_unreadNotificationsCount > 0)
+                            Positioned(
+                              right: 6,
+                              top: 2,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFFD700),
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    _unreadNotificationsCount > 9
+                                        ? '9+'
+                                        : '$_unreadNotificationsCount',
+                                    style: const TextStyle(
+                                      color: Color(0xFF8B1E0F),
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          tooltip: 'Scan Hotel QR',
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const QrScannerPage()),
-                            );
-                          },
-                          icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 20),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 4),
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
@@ -318,38 +355,6 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const QrScannerPage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 20),
-                      label: const Text(
-                        'Scan QR to Spot Book Hotel',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.15),
-                        side: const BorderSide(color: Colors.white, width: 1.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
-
                 ],
               ),
             ),
@@ -360,6 +365,147 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Notification Bar for Latest Offer or News
+                  if (_bannerNotification != null) ...[
+                    GestureDetector(
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const NotificationsPage(),
+                          ),
+                        );
+                        _loadNotificationsData();
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: _bannerNotification!.type == 'offer'
+                                ? [const Color(0xFFFFF8E7), const Color(0xFFFEF0D0)]
+                                : [const Color(0xFFEBF5FB), const Color(0xFFD4E6F1)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _bannerNotification!.type == 'offer'
+                                ? const Color(0xFFF39C12).withValues(alpha: 0.4)
+                                : const Color(0xFF3498DB).withValues(alpha: 0.4),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: _bannerNotification!.type == 'offer'
+                                    ? const Color(0xFFF39C12).withValues(alpha: 0.2)
+                                    : const Color(0xFF3498DB).withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                _bannerNotification!.type == 'offer'
+                                    ? Icons.local_offer_rounded
+                                    : Icons.campaign_rounded,
+                                size: 18,
+                                color: _bannerNotification!.type == 'offer'
+                                    ? const Color(0xFFD35400)
+                                    : const Color(0xFF2980B9),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        _bannerNotification!.type == 'offer'
+                                            ? 'ADMIN OFFER'
+                                            : 'ADMIN NEWS',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: _bannerNotification!.type == 'offer'
+                                              ? const Color(0xFFD35400)
+                                              : const Color(0xFF2980B9),
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                      if (_bannerNotification!.discountPercent != null) ...[
+                                        const SizedBox(width: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFC0392B),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            '${_bannerNotification!.discountPercent}% OFF',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    _bannerNotification!.title,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF2C3E50),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    _bannerNotification!.message,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF666666),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF888888)),
+                            const SizedBox(width: 4),
+                            GestureDetector(
+                              onTap: () async {
+                                await NotificationService.dismissBanner(_bannerNotification!.id);
+                                if (mounted) {
+                                  setState(() => _bannerNotification = null);
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Icon(Icons.close_rounded, size: 16, color: Colors.grey.shade500),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                     GestureDetector(
                     onTap: () {
                       Navigator.push(

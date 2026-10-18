@@ -396,29 +396,51 @@ static Future<Map<String, dynamic>> updateProfile({
   }
 
   static Future<Map<String, dynamic>> verifyPayment({
-  required int bookingId,
-  required String razorpayPaymentId,
-  required String razorpayOrderId,
-  required String razorpaySignature,
-  String? transactionId,
-}) async {
-  try {
-    final token = await getToken();
-    final res = await http.post(
-      Uri.parse('$baseUrl/bookings/$bookingId/verify-payment'),
-      headers: {..._headers, 'Authorization': 'Bearer $token'},
-      body: jsonEncode({
-        'razorpay_payment_id': razorpayPaymentId,
-        'razorpay_order_id': razorpayOrderId,
-        'razorpay_signature': razorpaySignature,
-        'transaction_id': transactionId ?? razorpayPaymentId,
-      }),
-    ).timeout(const Duration(seconds: 35));
-    return jsonDecode(res.body);
-  } catch (e) {
-    print('VERIFY PAYMENT ERROR: $e');
-    return {'error': 'Connection failed: $e'};
+    required int bookingId,
+    required String razorpayPaymentId,
+    required String razorpayOrderId,
+    required String razorpaySignature,
+    String? transactionId,
+  }) async {
+    try {
+      final token = await getToken();
+      final res = await http.post(
+        Uri.parse('$baseUrl/bookings/$bookingId/verify-payment'),
+        headers: {..._headers, 'Authorization': 'Bearer $token'},
+        body: jsonEncode({
+          'razorpay_payment_id': razorpayPaymentId,
+          'razorpay_order_id': razorpayOrderId,
+          'razorpay_signature': razorpaySignature,
+          'transaction_id': transactionId ?? razorpayPaymentId,
+        }),
+      ).timeout(const Duration(seconds: 35));
+      return jsonDecode(res.body);
+    } catch (e) {
+      print('VERIFY PAYMENT ERROR: $e');
+      return {'error': 'Connection failed: $e'};
+    }
   }
-}
 
-}
+  static Future<Map<String, dynamic>> getNotifications() async {
+    try {
+      final token = await getToken();
+      final res = await http
+          .get(
+            Uri.parse('$baseUrl/notifications'),
+            headers: {
+              ..._headers,
+              if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+      final decoded = jsonDecode(res.body);
+      if (decoded is List) {
+        return {'notifications': decoded};
+      }
+      return decoded;
+    } catch (e) {
+      print('GET NOTIFICATIONS ERROR: $e');
+      return {'error': 'Connection failed: $e'};
+    }
+  }
+}
