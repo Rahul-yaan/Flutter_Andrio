@@ -1094,9 +1094,9 @@ class _HomePageState extends State<HomePage> {
                     color: const Color(0xFFC0392B),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
+                  child: Text(
                     'HOTEL & SPOT OFFERS'.tr(),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -1105,18 +1105,18 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Exclusive Highway Deals'.tr(),
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Book verified highway partner hotels with instant spot QR check-in & best room rates.'.tr(),
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 11,
                     height: 1.3,
@@ -1331,9 +1331,9 @@ class _BannerDetailSheet extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'COUPON CODE'.tr(),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF888888),
@@ -1362,7 +1362,7 @@ class _BannerDetailSheet extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: () => onCopyCode(promoCode),
                     icon: const Icon(Icons.copy, size: 16),
-                    label: const Text('Copy'.tr()),
+                    label: Text('Copy'.tr()),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFC0392B),
                       foregroundColor: Colors.white,
@@ -1389,9 +1389,9 @@ class _BannerDetailSheet extends StatelessWidget {
                 ),
                 elevation: 0,
               ),
-              child: const Text(
+              child: Text(
                 'Explore Hotels & Book Now'.tr(),
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
             ),
           ),

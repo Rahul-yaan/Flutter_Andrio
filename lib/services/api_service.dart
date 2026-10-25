@@ -501,4 +501,35 @@ static Future<Map<String, dynamic>> updateProfile({
       return [];
     }
   }
+
+  static Timer? _heartbeatTimer;
+
+  /// Starts a background periodic keep-alive heartbeat to prevent backend server cold-starts or sleep.
+  static void startHeartbeat() {
+    _heartbeatTimer?.cancel();
+    // Fire an initial heartbeat ping shortly after startup, then periodically every 4 minutes.
+    Timer(const Duration(seconds: 3), () => _sendHeartbeat());
+    _heartbeatTimer = Timer.periodic(const Duration(minutes: 4), (_) => _sendHeartbeat());
+  }
+
+  /// Cancels the running heartbeat timer.
+  static void stopHeartbeat() {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
+  }
+
+  static Future<void> _sendHeartbeat() async {
+    try {
+      if (baseUrl.isNotEmpty) {
+        await http
+            .get(
+              Uri.parse('$baseUrl/banners?target=user'),
+              headers: _headers,
+            )
+            .timeout(const Duration(seconds: 10));
+      }
+    } catch (_) {
+      // Heartbeat silently ignores failures to avoid disrupting the UI
+    }
+  }
 }
