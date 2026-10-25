@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/api_service.dart';
+import '../services/language_service.dart';
 import 'edit_profile_page.dart';
 import 'login_page.dart';
 
@@ -315,23 +316,23 @@ class _ProfilePageState extends State<ProfilePage> {
                           _openLegalPage('/customer/terms-and-conditions', 'Terms & Conditions');
                         }),
                         const Divider(height: 1, indent: 50, endIndent: 20),
-                        _buildListTile(Icons.info_outline, 'About Us', () {
+                        _buildListTile(Icons.info_outline, 'About Us'.tr(), () {
                           _openLegalPage('/user/about-us', 'About Us');
                         }),
                         const Divider(height: 1, indent: 50, endIndent: 20),
-                        _buildListTile(Icons.privacy_tip_outlined, 'Privacy Policy', () {
+                        _buildListTile(Icons.privacy_tip_outlined, 'Privacy Policy'.tr(), () {
                           _openLegalPage('/customer/privacy-policy', 'Privacy Policy');
                         }),
                         const Divider(height: 1, indent: 50, endIndent: 20),
-                        _buildListTile(Icons.headset_mic_outlined, 'Contact Us', () {
+                        _buildListTile(Icons.headset_mic_outlined, 'Contact Us'.tr(), () {
                           _openLegalPage('/user/contact-us', 'Contact Us');
                         }),
                         const Divider(height: 1, indent: 50, endIndent: 20),
-                        _buildListTile(Icons.share_outlined, 'Share App', () {
+                        _buildListTile(Icons.share_outlined, 'Share App'.tr(), () {
                           _openLegalPage('/user/share-app', 'Share App');
                         }),
                         const Divider(height: 1, indent: 50, endIndent: 20),
-                        _buildListTile(Icons.star_border, 'Rate Us', () {
+                        _buildListTile(Icons.star_border, 'Rate Us'.tr(), () {
                           _openLegalPage('/user/rate-us', 'Rate Us');
                         }),
                       ],

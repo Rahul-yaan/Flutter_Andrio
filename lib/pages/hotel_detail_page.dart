@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../services/api_service.dart';
+import '../services/language_service.dart';
 import 'booking_page.dart';
 import 'login_page.dart';
 import 'hotel_map_screen.dart';
@@ -320,7 +321,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           ),
                           child: Column(
                             children: [
-                              const Text('Price/Night',
+                              Text('Price/Night'.tr(),
                                   style: TextStyle(
                                       fontSize: 12,
                                       color: Color(0xFF888888))),
@@ -349,7 +350,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           ),
                           child: Column(
                             children: [
-                              const Text('Available Slots',
+                              Text('Available Slots'.tr(),
                                   style: TextStyle(
                                       fontSize: 12,
                                       color: Color(0xFF888888))),
@@ -483,7 +484,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       TextButton.icon(
                         onPressed: _showReviewDialog,
                         icon: const Icon(Icons.edit, size: 16, color: Color(0xFFC0392B)),
-                        label: const Text('Write a Review', style: TextStyle(color: Color(0xFFC0392B), fontSize: 13, fontWeight: FontWeight.bold)),
+                        label: Text('Write a Review'.tr(), style: const TextStyle(color: Color(0xFFC0392B), fontSize: 13, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),

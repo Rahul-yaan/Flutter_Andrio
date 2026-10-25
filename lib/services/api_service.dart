@@ -270,6 +270,7 @@ class ApiService {
     required String paymentMethod,
     double? discountPercentage,
     double? discountAmount,
+    String? discountCode,
   }) async {
     try {
       final token = await getToken();
@@ -286,6 +287,7 @@ class ApiService {
           'payment_method': paymentMethod,
           if (discountPercentage != null) 'discount_percentage': discountPercentage,
           if (discountAmount != null) 'discount_amount': discountAmount,
+          if (discountCode != null && discountCode.isNotEmpty) 'discount_code': discountCode,
         }),
       ).timeout(const Duration(seconds: 35));
       return jsonDecode(res.body);
@@ -443,4 +445,60 @@ static Future<Map<String, dynamic>> updateProfile({
       return {'error': 'Connection failed: $e'};
     }
   }
-}
+
+    static Future<Map<String, dynamic>> getBannersData({String target = 'user'}) async {
+    try {
+      final token = await getToken();
+      final res = await http
+          .get(
+            Uri.parse('$baseUrl/banners?target=$target'),
+            headers: {
+              ..._headers,
+              if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+      }
+      return {};
+    } catch (e) {
+      print('GET BANNERS DATA ERROR: $e');
+      return {};
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getBanners({String target = 'user'}) async {
+    try {
+      final token = await getToken();
+      final res = await http
+          .get(
+            Uri.parse('$baseUrl/banners?target=$target'),
+            headers: {
+              ..._headers,
+              if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is Map<String, dynamic>) {
+          if (decoded['banners'] is List) {
+            return List<Map<String, dynamic>>.from(decoded['banners']);
+          } else if (decoded['data'] is List) {
+            return List<Map<String, dynamic>>.from(decoded['data']);
+          }
+        } else if (decoded is List) {
+          return List<Map<String, dynamic>>.from(decoded);
+        }
+      }
+      return [];
+    } catch (e) {
+      print('GET BANNERS ERROR: $e');
+      return [];
+    }
+  }
+}

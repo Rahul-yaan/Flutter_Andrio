@@ -35,18 +35,28 @@ class NotificationItem {
       parsedDate = DateTime.now();
     }
 
+    final code = json['discount_code']?.toString() ?? json['promo_code']?.toString();
+    final discRaw = json['discount_percentage'] ?? json['discount_percent'];
+    int? discVal;
+    if (discRaw != null) {
+      discVal = num.tryParse(discRaw.toString())?.round();
+    }
+
+    String determinedType = 'news';
+    if (json['type'] != null && json['type'].toString().trim().isNotEmpty) {
+      determinedType = json['type'].toString().toLowerCase();
+    } else if ((code != null && code.isNotEmpty) || (discVal != null && discVal > 0)) {
+      determinedType = 'offer';
+    }
+
     return NotificationItem(
       id: json['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
       title: json['title']?.toString() ?? 'Notification',
       message: json['message']?.toString() ?? json['description']?.toString() ?? '',
-      type: json['type']?.toString().toLowerCase() ?? 'news',
+      type: determinedType,
       createdAt: parsedDate,
-      discountCode: json['discount_code']?.toString() ?? json['promo_code']?.toString(),
-      discountPercent: json['discount_percentage'] != null
-          ? int.tryParse(json['discount_percentage'].toString())
-          : (json['discount_percent'] != null
-              ? int.tryParse(json['discount_percent'].toString())
-              : null),
+      discountCode: code,
+      discountPercent: discVal,
       validTill: json['valid_till']?.toString() ?? json['expires_at']?.toString(),
       bannerUrl: json['banner_url']?.toString() ?? json['image_url']?.toString(),
       isRead: json['is_read'] == true || json['read'] == true,

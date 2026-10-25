@@ -10,47 +10,7 @@ class NotificationService {
   // In-memory cache
   static List<NotificationItem>? _cachedNotifications;
 
-  // Default initial Admin offers & news items for seamless UX
-  static List<NotificationItem> _getDefaultAdminBroadcasts() {
-    return [
-      NotificationItem(
-        id: 'offer_spot_welcome',
-        title: 'Special Spot Booking Discount 🎉',
-        message: 'Admin is offering 20% OFF on all highway hotel spot bookings this month. Use promo code YAANSPOT at checkout!',
-        type: 'offer',
-        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-        discountCode: 'YAANSPOT',
-        discountPercent: 20,
-        validTill: 'Limited Period Offer',
-      ),
-      NotificationItem(
-        id: 'news_highway_expansion',
-        title: 'Highway Update: 15+ New Partner Dhabas & Hotels',
-        message: 'Good news! Yaan has expanded partnerships across NH48 and Mumbai-Delhi expressway. Verified parking, hot meals, and 24x7 security are now available.',
-        type: 'news',
-        createdAt: DateTime.now().subtract(const Duration(hours: 8)),
-      ),
-      NotificationItem(
-        id: 'offer_weekend_stay',
-        title: 'Flat ₹200 OFF on Overnight Truck Stops',
-        message: 'Get flat ₹200 discount when you book stay for 6+ hours during weekend journeys. Valid at all verified partner hotels.',
-        type: 'offer',
-        createdAt: DateTime.now().subtract(const Duration(days: 1, hours: 3)),
-        discountCode: 'TRUCK200',
-        discountPercent: 15,
-        validTill: 'Valid till Sunday',
-      ),
-      NotificationItem(
-        id: 'news_safety_alert',
-        title: 'Admin News: Highway Monsoon Safety & Support',
-        message: 'Drive safe in rainy conditions. Our 24x7 route roadside assistance helpline is now live directly inside the Profile section.',
-        type: 'news',
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-    ];
-  }
-
-  /// Fetch notifications (combining API live data with cached/default broadcasts)
+  /// Fetch notifications uploaded by admin (from /notifications and /banners API)
   static Future<List<NotificationItem>> getNotifications({bool forceRefresh = false}) async {
     if (!forceRefresh && _cachedNotifications != null) {
       return _cachedNotifications!;
@@ -61,6 +21,7 @@ class NotificationService {
 
     List<NotificationItem> items = [];
 
+    // 1. Fetch from notifications API
     try {
       final res = await ApiService.getNotifications();
       if (res['notifications'] is List && (res['notifications'] as List).isNotEmpty) {
@@ -80,15 +41,17 @@ class NotificationService {
       debugPrint('Notification fetch from backend failed: $e');
     }
 
-    // Merge default admin offers & news if API provided none
-    if (items.isEmpty) {
-      items = _getDefaultAdminBroadcasts();
-    } else {
-      // If API provided some, check if we need to supplement with key offers if missing
-      final hasOffers = items.any((n) => n.type == 'offer');
-      if (!hasOffers) {
-        items.addAll(_getDefaultAdminBroadcasts().where((n) => n.type == 'offer'));
+    // 2. Supplement with active promotional banners/ads uploaded by admin
+    try {
+      final banners = await ApiService.getBanners(target: 'user');
+      for (var raw in banners) {
+        final id = raw['id']?.toString() ?? '';
+        if (!items.any((existing) => existing.id == id)) {
+          items.add(NotificationItem.fromJson(raw));
+        }
       }
+    } catch (e) {
+      debugPrint('Banner fetch for notifications failed: $e');
     }
 
     // Apply read state

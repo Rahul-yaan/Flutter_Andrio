@@ -8,6 +8,7 @@ import 'hotel_map_screen.dart';
 import 'booking_page.dart';
 import 'login_page.dart';
 import '../services/api_service.dart';
+import '../services/language_service.dart';
 import '../utils/image_utils.dart';
 
 class SearchResultsPage extends StatefulWidget {
@@ -119,16 +120,16 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
   String _getSortButtonLabel() {
     switch (_currentSortMode) {
       case 'reverse':
-        return 'Reverse Route';
+        return 'Reverse Route'.tr();
       case 'price_low':
-        return 'Price ↑';
+        return 'Price ↑'.tr();
       case 'price_high':
-        return 'Price ↓';
+        return 'Price ↓'.tr();
       case 'rating':
-        return 'Rating';
+        return 'Rating'.tr();
       case 'forward':
       default:
-        return 'Sort';
+        return 'Sort'.tr();
     }
   }
 
@@ -161,32 +162,32 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
               const Divider(),
               _buildSortOptionTile(
                 icon: Icons.alt_route,
-                title: 'Start to Destination (Route Order)',
+                title: 'Start to Destination (Route Order)'.tr(),
                 subtitle: 'Hotels sorted from ${widget.fromCity} to ${widget.toCity}',
                 mode: 'forward',
               ),
               _buildSortOptionTile(
                 icon: Icons.swap_calls,
-                title: 'Destination to Start (Reverse Route)',
+                title: 'Destination to Start (Reverse Route)'.tr(),
                 subtitle: 'Hotels sorted from ${widget.toCity} to ${widget.fromCity}',
                 mode: 'reverse',
               ),
               _buildSortOptionTile(
                 icon: Icons.arrow_downward,
-                title: 'Price: Low to High',
-                subtitle: 'Budget friendly options first',
+                title: 'Price: Low to High'.tr(),
+                subtitle: 'Budget friendly options first'.tr(),
                 mode: 'price_low',
               ),
               _buildSortOptionTile(
                 icon: Icons.arrow_upward,
-                title: 'Price: High to Low',
-                subtitle: 'Premium hotels first',
+                title: 'Price: High to Low'.tr(),
+                subtitle: 'Premium hotels first'.tr(),
                 mode: 'price_high',
               ),
               _buildSortOptionTile(
                 icon: Icons.star_rate_rounded,
-                title: 'Rating: High to Low',
-                subtitle: 'Best customer rated hotels',
+                title: 'Rating: High to Low'.tr(),
+                subtitle: 'Best customer rated hotels'.tr(),
                 mode: 'rating',
               ),
             ],
@@ -422,7 +423,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
               size: 18,
             ),
             label: Text(
-              _showMap ? 'List' : 'Map',
+              _showMap ? 'List'.tr() : 'Map'.tr(),
               style: const TextStyle(color: Colors.white),
             ),
           ),
@@ -438,7 +439,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${_hotels.length} hotels found on route',
+                  '${_hotels.length} ' + 'hotels found on route'.tr(),
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -537,7 +538,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Fastest Route', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('Fastest Route'.tr(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                         const SizedBox(height: 2),
                         Text('$_routeDuration ($_routeDistance)', style: const TextStyle(fontSize: 13, color: Colors.black87)),
                       ],
@@ -853,7 +854,7 @@ class _HotelListCard extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
-                            child: const Text('Book', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                            child: Text('Book'.tr(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -873,7 +874,7 @@ class _HotelListCard extends StatelessWidget {
                               elevation: 0,
                             ),
                             icon: const Icon(Icons.map, size: 16),
-                            label: const Text('Map', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                            label: Text('Map'.tr(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],

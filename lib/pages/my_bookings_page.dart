@@ -1,6 +1,7 @@
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/language_service.dart';
 import '../utils/image_utils.dart';
 
 class MyBookingsPage extends StatefulWidget {
@@ -134,12 +135,12 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Cancel Booking'),
-        content: const Text('Are you sure you want to cancel this booking?'),
+        title: Text('Cancel Booking'.tr()),
+        content: Text('Are you sure you want to cancel this booking?'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('No'),
+            child: Text('No'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -158,7 +159,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
         _loadBookings();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Booking cancelled successfully')),
+            SnackBar(content: Text('Booking cancelled successfully'.tr())),
           );
         }
       }
@@ -187,7 +188,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFC0392B),
         foregroundColor: Colors.white,
-        title: const Text('My Bookings'),
+        title: Text('My Bookings'.tr()),
         elevation: 0,
       ),
       body: _loading
@@ -355,7 +356,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                       OutlinedButton.icon(
                                         onPressed: () => _showCheckInQrDialog(b),
                                         icon: const Icon(Icons.qr_code_rounded, size: 14, color: Color(0xFF27AE60)),
-                                        label: const Text('Show QR Pass', style: TextStyle(color: Color(0xFF27AE60), fontWeight: FontWeight.bold, fontSize: 11)),
+                                        label: Text('Show QR Pass'.tr(), style: const TextStyle(color: Color(0xFF27AE60), fontWeight: FontWeight.bold, fontSize: 11)),
                                         style: OutlinedButton.styleFrom(
                                           side: const BorderSide(color: Color(0xFF27AE60)),
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

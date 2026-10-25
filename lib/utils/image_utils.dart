@@ -1,6 +1,9 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ImageUtils {
+  /// Alias for compatibility
+  static String? getPrimaryImageUrl(dynamic hotel) => getHotelImageUrl(hotel);
+
   /// Safely resolves and formats a complete image URL for a given hotel object.
   static String? getHotelImageUrl(dynamic hotel) {
     if (hotel == null || hotel is! Map) return null;
