@@ -85,7 +85,7 @@ class _LogoPageState extends State<LogoPage>
                 builder: (context, _) {
                   // Truck moves from offscreen left (-180px) to offscreen right (screenWidth + 80px)
                   final curvedVal = Curves.easeInOutCubic.transform(_truckController.value);
-                  final truckX = -180.0 + (screenWidth + 260.0) * curvedVal;
+                  final truckX = -280.0 + (screenWidth + 360.0) * curvedVal;
                   return _TruckHighwayTrack(
                     truckX: truckX,
                     progress: _truckController.value,
@@ -285,13 +285,13 @@ class _TruckHighwayTrack extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
-                    // Headlight beam projecting forward
+                    // Headlight beam projecting forward from front bumper
                     Positioned(
-                      right: -30,
-                      bottom: 6,
+                      right: -32,
+                      bottom: 8,
                       child: Container(
-                        width: 36,
-                        height: 16,
+                        width: 38,
+                        height: 18,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
