@@ -55,7 +55,7 @@ class _OtpPageState extends State<OtpPage> {
 
     setState(() => _loading = false);
 
-    if (result['message'] != null) {
+    if (result['success'] == true && result['token'] != null) {
       _snack('Verified! Please login.');
       if (mounted) {
         Navigator.pushAndRemoveUntil(
@@ -65,7 +65,7 @@ class _OtpPageState extends State<OtpPage> {
         );
       }
     } else {
-      _snack(result['error'] ?? 'Verification failed');
+      _snack(result['message'] ?? result['error'] ?? 'Verification failed');
     }
   }
 

@@ -5,7 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiService {
-  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? '';
+  static String get baseUrl {
+    final envUrl = dotenv.env['API_BASE_URL'];
+    if (envUrl != null && envUrl.trim().isNotEmpty) {
+      return envUrl.trim();
+    }
+    return 'https://yaan-backend.onrender.com/api';
+  }
 
   static Map<String, String> get _headers => {
     'Content-Type': 'application/json',
@@ -100,7 +106,27 @@ class ApiService {
     return prefs.getString('api_token');
   }
 
+  static Future<Map<String, dynamic>> deleteAccount() async {
+    try {
+      final token = await getToken();
+      final headers = Map<String, String>.from(_headers);
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+      final res = await http
+          .delete(
+            Uri.parse('$baseUrl/account'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 20));
+      return jsonDecode(res.body);
+    } catch (e) {
+      return {'error': 'Connection failed: $e', 'message': 'Connection failed: $e'};
+    }
+  }
+
   static Future<void> clearToken() async {
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('api_token');
   }

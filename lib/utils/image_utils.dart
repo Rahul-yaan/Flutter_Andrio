@@ -44,7 +44,10 @@ class ImageUtils {
       return imagePath;
     }
 
-    String baseUrl = dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? '';
+    String? rawBase = dotenv.env['API_BASE_URL'];
+    String baseUrl = (rawBase != null && rawBase.trim().isNotEmpty)
+        ? rawBase.trim().replaceAll('/api', '')
+        : 'https://yaan-backend.onrender.com';
     if (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.substring(0, baseUrl.length - 1);
     }

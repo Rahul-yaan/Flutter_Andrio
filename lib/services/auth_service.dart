@@ -45,8 +45,8 @@ class AuthService {
   }
 
   Future<String?> verifyOtp(String smsCode) async {
-    if (_verificationId == null || _verificationId == 'fallback_verification_id') {
-      return smsCode.isNotEmpty ? smsCode : 'bypass_token';
+    if (_verificationId == null) {
+      return null;
     }
     try {
       final credential = PhoneAuthProvider.credential(
@@ -54,10 +54,10 @@ class AuthService {
         smsCode: smsCode,
       );
       final result = await _auth.signInWithCredential(credential);
-      return await result.user?.getIdToken() ?? smsCode;
+      return await result.user?.getIdToken();
     } catch (e) {
-      print('OTP VERIFICATION FALLBACK FOR ERROR: $e');
-      return smsCode.isNotEmpty ? smsCode : 'bypass_token';
+      print('OTP VERIFICATION ERROR: $e');
+      return null;
     }
   }
 
