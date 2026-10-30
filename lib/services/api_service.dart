@@ -5,7 +5,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiService {
-  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? '';
+  static const String defaultBaseUrl = 'https://yaan-backend.onrender.com/api';
+
+  /// Server address from .env, or the live server if .env is missing or empty.
+  static String get baseUrl {
+    String? envUrl;
+    try {
+      envUrl = dotenv.env['API_BASE_URL'];
+    } catch (_) {
+      // dotenv was not loaded (no .env file in the build)
+    }
+    return (envUrl != null && envUrl.trim().isNotEmpty) ? envUrl.trim() : defaultBaseUrl;
+  }
 
   static Map<String, String> get _headers => {
     'Content-Type': 'application/json',

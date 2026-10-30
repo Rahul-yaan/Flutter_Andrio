@@ -1,4 +1,4 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../services/api_service.dart';
 
 class ImageUtils {
   /// Alias for compatibility
@@ -44,7 +44,7 @@ class ImageUtils {
       return imagePath;
     }
 
-    String baseUrl = dotenv.env['API_BASE_URL']?.replaceAll('/api', '') ?? '';
+    String baseUrl = ApiService.baseUrl.replaceFirst(RegExp(r'/api/?$'), '');
     if (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.substring(0, baseUrl.length - 1);
     }
