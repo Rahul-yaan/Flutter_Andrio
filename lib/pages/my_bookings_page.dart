@@ -155,13 +155,22 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
 
     if (confirm == true) {
       final result = await ApiService.cancelBooking(bookingId: bookingId);
-      if (result['message'] != null) {
+      // Error replies also contain 'message', so check 'success'
+      if (result['success'] == true) {
         _loadBookings();
         if (mounted) {
+          // Server message includes the refund-pending note for paid bookings
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Booking cancelled successfully'.tr())),
+            SnackBar(content: Text((result['message'] ?? 'Booking cancelled successfully'.tr()).toString())),
           );
         }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text((result['message'] ?? result['error'] ?? 'Could not cancel booking').toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
