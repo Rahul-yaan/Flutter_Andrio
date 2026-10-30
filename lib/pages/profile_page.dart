@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../services/language_service.dart';
 import 'edit_profile_page.dart';
 import 'login_page.dart';
@@ -43,6 +44,71 @@ class _ProfilePageState extends State<ProfilePage> {
         (route) => false,
       );
     }
+  }
+
+  // Google Play requires apps with sign-up to offer account deletion
+  Future<void> _deleteAccount() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text(
+          'This will permanently delete your account and personal details. '
+          'Your past booking receipts are kept without your name for tax records. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator(color: Color(0xFFC0392B))),
+    );
+
+    String? errorMsg;
+    try {
+      final token = await ApiService.getToken();
+      final res = await http.delete(
+        Uri.parse('${ApiService.baseUrl}/account'),
+        headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+      ).timeout(const Duration(seconds: 60));
+      final body = jsonDecode(res.body);
+      if (res.statusCode == 200 && body is Map && body['success'] == true) {
+        await ApiService.clearToken();
+        await AuthService().logout();
+      } else {
+        errorMsg = (body is Map ? (body['message'] ?? body['error']) : null)?.toString() ?? 'Could not delete account.';
+      }
+    } catch (e) {
+      errorMsg = 'Could not delete account. Please check your internet and try again.';
+    }
+
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop(); // close loading
+
+    if (errorMsg != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Your account has been deleted.')),
+    );
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (route) => false,
+    );
   }
 
   void _openLegalPage(String endpoint, String title) {
@@ -358,6 +424,15 @@ class _ProfilePageState extends State<ProfilePage> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton.icon(
+                    onPressed: _deleteAccount,
+                    icon: const Icon(Icons.delete_forever_outlined, color: Colors.red),
+                    label: const Text(
+                      'Delete Account',
+                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
                     ),
                   ),
                   const SizedBox(height: 30),
