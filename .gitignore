@@ -48,3 +48,8 @@ app.*.map.json
 .env
 
 .kotlin/
+
+# Release signing (never commit)
+key.properties
+*.jks
+*.keystore
